@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tree Manager App — Design Directions</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #2D6A4F;
+    --primary-focus: #1B4332;
+    --secondary: #D4A373;
+    --accent: #95D5B2;
+    --neutral-light: #F5F0EB;
+    --neutral-dark: #2D3436;
+    --error: #C1666B;
+    --info: #5B9BD5;
+    --white: #FFFFFF;
+    --gray-100: #F7F7F7;
+    --gray-200: #E8E8E8;
+    --gray-300: #D1D1D1;
+    --gray-500: #888;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; color: var(--neutral-dark); background: var(--gray-100); }
+
+  /* Navigation */
+  .nav { position: fixed; top: 0; left: 0; right: 0; background: var(--white); border-bottom: 1px solid var(--gray-200); z-index: 100; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .nav h1 { font-size: 16px; font-weight: 700; color: var(--primary); }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab { padding: 8px 16px; border-radius: 8px; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--gray-500); cursor: pointer; transition: all 0.2s; }
+  .nav-tab:hover { background: var(--neutral-light); color: var(--neutral-dark); }
+  .nav-tab.active { background: var(--primary); color: white; }
+
+  /* Sections */
+  .direction { display: none; padding: 80px 24px 48px; min-height: 100vh; }
+  .direction.active { display: block; }
+  .direction-header { max-width: 1280px; margin: 0 auto 48px; }
+  .direction-header h2 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .direction-header p { font-size: 16px; color: var(--gray-500); line-height: 1.6; max-width: 640px; }
+  .direction-header .tag { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; margin-right: 8px; margin-bottom: 16px; }
+  .tag-layout { background: #E8F5E9; color: var(--primary); }
+  .tag-density { background: #FFF3E0; color: #E65100; }
+  .tag-style { background: #E3F2FD; color: #1565C0; }
+
+  .mockup-frame { max-width: 1280px; margin: 0 auto; background: var(--white); border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden; }
+
+  /* ===== DIRECTION 1: Clean Stacked Flow ===== */
+  .d1-topbar { background: var(--primary); color: white; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+  .d1-topbar .logo { font-size: 18px; font-weight: 700; }
+  .d1-topbar nav a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; margin-left: 24px; }
+  .d1-topbar nav a:hover { color: white; }
+  .d1-hero { padding: 64px 32px; text-align: center; background: linear-gradient(180deg, #F0F7F4 0%, var(--white) 100%); }
+  .d1-hero h2 { font-size: 32px; font-weight: 700; color: var(--neutral-dark); margin-bottom: 12px; }
+  .d1-hero p { font-size: 18px; color: var(--gray-500); max-width: 500px; margin: 0 auto 32px; line-height: 1.6; }
+  .d1-step-indicator { display: flex; justify-content: center; gap: 8px; margin-bottom: 32px; }
+  .d1-step { width: 40px; height: 4px; border-radius: 2px; background: var(--gray-200); }
+  .d1-step.active { background: var(--primary); width: 64px; }
+  .d1-step.done { background: var(--accent); }
+  .d1-profile-section { padding: 48px 32px; max-width: 640px; margin: 0 auto; }
+  .d1-profile-section h3 { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+  .d1-profile-section .subtitle { font-size: 15px; color: var(--gray-500); margin-bottom: 24px; }
+  .d1-choice-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
+  .d1-choice-card { padding: 20px 16px; border: 2px solid var(--gray-200); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .d1-choice-card:hover { border-color: var(--primary); background: #F0F7F4; }
+  .d1-choice-card.selected { border-color: var(--primary); background: #F0F7F4; }
+  .d1-choice-card .icon { font-size: 28px; margin-bottom: 8px; }
+  .d1-choice-card .label { font-size: 14px; font-weight: 600; }
+  .d1-choice-card .desc { font-size: 12px; color: var(--gray-500); margin-top: 4px; }
+  .d1-btn-primary { display: inline-block; padding: 14px 32px; background: var(--primary); color: white; border: none; border-radius: 8px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .d1-btn-primary:hover { background: var(--primary-focus); }
+  .d1-btn-row { text-align: center; margin-top: 32px; }
+
+  /* ===== DIRECTION 2: Side-by-Side Map + Cards ===== */
+  .d2-layout { display: grid; grid-template-columns: 1fr 1fr; min-height: 600px; }
+  .d2-sidebar { background: var(--white); padding: 32px; border-right: 1px solid var(--gray-200); overflow-y: auto; }
+  .d2-sidebar h3 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .d2-sidebar .meta { font-size: 13px; color: var(--gray-500); margin-bottom: 24px; }
+  .d2-map-area { background: #D5E8D4; position: relative; display: flex; align-items: center; justify-content: center; }
+  .d2-map-placeholder { text-align: center; color: var(--primary); }
+  .d2-map-placeholder .icon { font-size: 48px; margin-bottom: 8px; }
+  .d2-map-placeholder p { font-size: 14px; }
+  .d2-parcel-badge { position: absolute; top: 16px; left: 16px; background: white; padding: 10px 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .d2-parcel-badge .label { font-size: 11px; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px; }
+  .d2-parcel-badge .value { font-size: 15px; font-weight: 600; color: var(--neutral-dark); }
+  .d2-card { padding: 16px; border: 1px solid var(--gray-200); border-radius: 12px; margin-bottom: 12px; display: flex; gap: 16px; cursor: pointer; transition: all 0.2s; }
+  .d2-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(45,106,79,0.1); }
+  .d2-card-img { width: 80px; height: 80px; border-radius: 8px; background: #E8F5E9; display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
+  .d2-card-body h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .d2-card-body .fit { font-size: 13px; color: var(--primary); margin-bottom: 4px; font-weight: 500; }
+  .d2-card-body .why { font-size: 13px; color: var(--gray-500); line-height: 1.5; }
+  .d2-card-action { display: flex; align-items: center; margin-left: auto; }
+  .d2-add-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--primary); background: none; color: var(--primary); font-size: 18px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .d2-add-btn:hover { background: var(--primary); color: white; }
+  .d2-topbar { background: var(--white); padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gray-200); }
+  .d2-topbar .logo { font-size: 16px; font-weight: 700; color: var(--primary); }
+  .d2-filter-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .d2-filter { padding: 6px 14px; border-radius: 100px; border: 1px solid var(--gray-200); font-size: 13px; font-family: inherit; background: white; cursor: pointer; transition: all 0.15s; }
+  .d2-filter:hover { border-color: var(--primary); }
+  .d2-filter.active { background: var(--primary); color: white; border-color: var(--primary); }
+  .d2-renegotiate { margin-top: 20px; padding: 12px 16px; border: 1px solid var(--gray-200); border-radius: 12px; display: flex; gap: 8px; }
+  .d2-renegotiate input { flex: 1; border: none; font-family: inherit; font-size: 14px; outline: none; }
+  .d2-renegotiate button { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 8px 16px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+
+  /* ===== DIRECTION 3: Mood-First Discovery ===== */
+  .d3-hero { padding: 48px 32px; background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%); color: white; }
+  .d3-hero h2 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .d3-hero p { font-size: 16px; opacity: 0.8; margin-bottom: 32px; }
+  .d3-mood-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 32px; transform: translateY(-40px); max-width: 900px; margin: 0 auto; }
+  .d3-mood-card { background: white; border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s; }
+  .d3-mood-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+  .d3-mood-card .emoji { font-size: 40px; margin-bottom: 12px; }
+  .d3-mood-card h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: var(--neutral-dark); }
+  .d3-mood-card p { font-size: 13px; color: var(--gray-500); line-height: 1.5; }
+  .d3-mood-card .count { margin-top: 12px; font-size: 12px; color: var(--primary); font-weight: 600; }
+  .d3-section { padding: 32px; max-width: 900px; margin: 0 auto; }
+  .d3-section h3 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+  .d3-tree-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .d3-tree-card { border-radius: 12px; overflow: hidden; border: 1px solid var(--gray-200); transition: all 0.2s; cursor: pointer; }
+  .d3-tree-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .d3-tree-img { height: 140px; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); display: flex; align-items: center; justify-content: center; font-size: 48px; }
+  .d3-tree-info { padding: 16px; }
+  .d3-tree-info h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .d3-tree-info .fit-badge { display: inline-block; padding: 2px 8px; background: #E8F5E9; color: var(--primary); font-size: 11px; font-weight: 600; border-radius: 4px; margin-bottom: 8px; }
+  .d3-tree-info p { font-size: 13px; color: var(--gray-500); line-height: 1.5; }
+
+  /* ===== DIRECTION 4: Progressive Single Page ===== */
+  .d4-container { max-width: 720px; margin: 0 auto; padding: 48px 32px; }
+  .d4-progress { display: flex; align-items: center; gap: 0; margin-bottom: 48px; }
+  .d4-progress-step { display: flex; align-items: center; gap: 8px; }
+  .d4-progress-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+  .d4-progress-dot.done { background: var(--primary); color: white; }
+  .d4-progress-dot.current { background: white; border: 2px solid var(--primary); color: var(--primary); }
+  .d4-progress-dot.upcoming { background: var(--gray-200); color: var(--gray-500); }
+  .d4-progress-line { width: 40px; height: 2px; margin: 0 4px; }
+  .d4-progress-line.done { background: var(--primary); }
+  .d4-progress-line.upcoming { background: var(--gray-200); }
+  .d4-progress-label { font-size: 11px; color: var(--gray-500); }
+  .d4-section { margin-bottom: 48px; }
+  .d4-section.collapsed { opacity: 0.4; }
+  .d4-section h3 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .d4-section .desc { font-size: 15px; color: var(--gray-500); margin-bottom: 20px; line-height: 1.6; }
+  .d4-section .done-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #E8F5E9; color: var(--primary); font-size: 13px; font-weight: 600; border-radius: 100px; margin-bottom: 16px; }
+  .d4-map-placeholder { height: 300px; border-radius: 12px; background: linear-gradient(135deg, #D5E8D4, #C8E6C9); display: flex; align-items: center; justify-content: center; border: 2px dashed var(--primary); }
+  .d4-map-placeholder p { color: var(--primary); font-weight: 500; }
+  .d4-analysis-card { padding: 20px; background: var(--neutral-light); border-radius: 12px; margin-top: 16px; }
+  .d4-analysis-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+  .d4-analysis-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .d4-analysis-row:last-child { border: none; }
+  .d4-analysis-row .label { font-size: 13px; color: var(--gray-500); }
+  .d4-analysis-row .value { font-size: 13px; font-weight: 600; }
+  .d4-thinking { text-align: center; padding: 48px; }
+  .d4-thinking .dots { font-size: 24px; color: var(--primary); animation: pulse 1.5s infinite; }
+  .d4-thinking p { font-size: 15px; color: var(--gray-500); margin-top: 12px; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* ===== DIRECTION 5: Dashboard with Sidebar Nav ===== */
+  .d5-layout { display: grid; grid-template-columns: 240px 1fr; min-height: 600px; }
+  .d5-sidebar { background: var(--primary-focus); color: white; padding: 24px 0; }
+  .d5-sidebar .logo { padding: 0 24px 24px; font-size: 18px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .d5-sidebar nav { padding: 16px 0; }
+  .d5-sidebar nav a { display: flex; align-items: center; gap: 12px; padding: 10px 24px; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 14px; transition: all 0.15s; }
+  .d5-sidebar nav a:hover { color: white; background: rgba(255,255,255,0.05); }
+  .d5-sidebar nav a.active { color: white; background: rgba(255,255,255,0.1); border-left: 3px solid var(--accent); }
+  .d5-main { padding: 32px; background: var(--neutral-light); }
+  .d5-main h2 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .d5-main .subtitle { font-size: 14px; color: var(--gray-500); margin-bottom: 24px; }
+  .d5-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .d5-stat-card { background: white; padding: 20px; border-radius: 12px; }
+  .d5-stat-card .label { font-size: 12px; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .d5-stat-card .value { font-size: 24px; font-weight: 700; color: var(--neutral-dark); }
+  .d5-stat-card .detail { font-size: 13px; color: var(--primary); margin-top: 4px; }
+  .d5-plan-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .d5-plan-card { background: white; border-radius: 12px; overflow: hidden; }
+  .d5-plan-card-header { padding: 16px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center; }
+  .d5-plan-card-header h4 { font-size: 15px; font-weight: 600; }
+  .d5-plan-card-body { padding: 16px; }
+  .d5-tree-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+  .d5-tree-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .d5-tree-item span { font-size: 14px; }
+
+  /* ===== DIRECTION 6: Card-Heavy Minimal ===== */
+  .d6-topbar { padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gray-200); }
+  .d6-topbar .logo { font-size: 18px; font-weight: 700; color: var(--primary); }
+  .d6-content { padding: 32px; max-width: 1100px; margin: 0 auto; }
+  .d6-content h2 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .d6-content .subtitle { color: var(--gray-500); font-size: 15px; margin-bottom: 24px; }
+  .d6-results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .d6-results-header h3 { font-size: 18px; font-weight: 600; }
+  .d6-results-header .count { font-size: 14px; color: var(--gray-500); }
+  .d6-tree-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .d6-tree-card { border-radius: 16px; overflow: hidden; border: 1px solid var(--gray-200); background: white; transition: all 0.2s; cursor: pointer; }
+  .d6-tree-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .d6-tree-card-img { height: 160px; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); display: flex; align-items: center; justify-content: center; font-size: 56px; position: relative; }
+  .d6-tree-card-img .add-float { position: absolute; bottom: -16px; right: 16px; width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: white; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; }
+  .d6-tree-card-body { padding: 20px 16px 16px; }
+  .d6-tree-card-body h4 { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+  .d6-tree-card-body .latin { font-size: 13px; color: var(--gray-500); font-style: italic; margin-bottom: 12px; }
+  .d6-tree-card-body .why { font-size: 13px; color: var(--neutral-dark); line-height: 1.6; padding: 12px; background: var(--neutral-light); border-radius: 8px; }
+  .d6-tree-card-body .why strong { color: var(--primary); }
+  .d6-tree-tags { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+  .d6-tree-tag { padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 500; background: var(--gray-100); color: var(--gray-500); }
+  .d6-tree-tag.good { background: #E8F5E9; color: var(--primary); }
+
+  /* Comparison view */
+  .comparison-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--neutral-dark); color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; z-index: 100; font-size: 14px; }
+  .comparison-bar .hint { opacity: 0.7; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <h1>Tree Manager App — Design Directions</h1>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showDirection(1)">1. Stacked Flow</button>
+    <button class="nav-tab" onclick="showDirection(2)">2. Map + Cards</button>
+    <button class="nav-tab" onclick="showDirection(3)">3. Mood-First</button>
+    <button class="nav-tab" onclick="showDirection(4)">4. Progressive</button>
+    <button class="nav-tab" onclick="showDirection(5)">5. Dashboard</button>
+    <button class="nav-tab" onclick="showDirection(6)">6. Card Minimal</button>
+  </div>
+</nav>
+
+<!-- DIRECTION 1: Clean Stacked Flow -->
+<div class="direction active" id="dir1">
+  <div class="direction-header">
+    <span class="tag tag-layout">Stacked Layout</span>
+    <span class="tag tag-density">Spacious</span>
+    <span class="tag tag-style">Guided Flow</span>
+    <h2>Direction 1: Clean Stacked Flow</h2>
+    <p>Full-width sections stacked vertically. Each step of the journey takes center stage. Maximum focus, minimal distraction. Like a guided wizard, but feels like a story unfolding.</p>
+  </div>
+  <div class="mockup-frame">
+    <div class="d1-topbar">
+      <span class="logo">🌳 Tree Manager</span>
+      <nav>
+        <a href="#">My Gardens</a>
+        <a href="#">My Plan</a>
+        <a href="#">Account</a>
+      </nav>
+    </div>
+    <div class="d1-hero">
+      <div class="d1-step-indicator">
+        <div class="d1-step done"></div>
+        <div class="d1-step active"></div>
+        <div class="d1-step"></div>
+        <div class="d1-step"></div>
+      </div>
+      <h2>What are you hoping to grow?</h2>
+      <p>Tell us about your goals and we'll find trees that match your vision perfectly.</p>
+    </div>
+    <div class="d1-profile-section">
+      <h3>Your Goals</h3>
+      <p class="subtitle">Select all that apply — we'll tailor your recommendations.</p>
+      <div class="d1-choice-grid">
+        <div class="d1-choice-card selected">
+          <div class="icon">🍎</div>
+          <div class="label">Fruit Trees</div>
+          <div class="desc">Harvest your own</div>
+        </div>
+        <div class="d1-choice-card">
+          <div class="icon">🌿</div>
+          <div class="label">Privacy</div>
+          <div class="desc">Screening & hedges</div>
+        </div>
+        <div class="d1-choice-card selected">
+          <div class="icon">🌸</div>
+          <div class="label">Beauty</div>
+          <div class="desc">Ornamental trees</div>
+        </div>
+        <div class="d1-choice-card">
+          <div class="icon">🐝</div>
+          <div class="label">Pollinators</div>
+          <div class="desc">Attract wildlife</div>
+        </div>
+        <div class="d1-choice-card">
+          <div class="icon">🍂</div>
+          <div class="label">Shade</div>
+          <div class="desc">Cool your garden</div>
+        </div>
+        <div class="d1-choice-card">
+          <div class="icon">💨</div>
+          <div class="label">Windbreak</div>
+          <div class="desc">Protect your space</div>
+        </div>
+      </div>
+      <h3>Maintenance Level</h3>
+      <p class="subtitle">How much time do you want to spend caring for your trees?</p>
+      <div class="d1-choice-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 0;">
+        <div class="d1-choice-card selected">
+          <div class="icon">😌</div>
+          <div class="label">Low Effort</div>
+          <div class="desc">Plant and forget</div>
+        </div>
+        <div class="d1-choice-card">
+          <div class="icon">🙂</div>
+          <div class="label">Some Care</div>
+          <div class="desc">Occasional pruning</div>
+        </div>
+        <div class="d1-choice-card">
+          <div class="icon">🧑‍🌾</div>
+          <div class="label">Hands On</div>
+          <div class="desc">I enjoy the work</div>
+        </div>
+      </div>
+      <div class="d1-btn-row">
+        <button class="d1-btn-primary">Continue to Draw Your Garden →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DIRECTION 2: Side-by-Side Map + Cards -->
+<div class="direction" id="dir2">
+  <div class="direction-header">
+    <span class="tag tag-layout">Split Layout</span>
+    <span class="tag tag-density">Efficient</span>
+    <span class="tag tag-style">Airbnb-Inspired</span>
+    <h2>Direction 2: Map + Cards Side-by-Side</h2>
+    <p>Airbnb-inspired dual layout. Map anchors the left, recommendation cards scroll on the right. Users stay spatially oriented while browsing trees. Filters and renegotiation live inline.</p>
+  </div>
+  <div class="mockup-frame">
+    <div class="d2-topbar">
+      <span class="logo">🌳 Tree Manager</span>
+      <div style="display: flex; gap: 16px; align-items: center;">
+        <span style="font-size: 14px; color: var(--gray-500);">Sophie's Garden — Lyon, France</span>
+        <button style="padding: 8px 16px; background: var(--secondary); color: white; border: none; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer;">My Plan (3)</button>
+      </div>
+    </div>
+    <div class="d2-layout">
+      <div class="d2-map-area">
+        <div class="d2-parcel-badge">
+          <div class="label">Your Parcel</div>
+          <div class="value">600m² — Cfb Oceanic</div>
+        </div>
+        <div class="d2-map-placeholder">
+          <div class="icon">🗺️</div>
+          <p>Satellite map with drawn parcel</p>
+        </div>
+      </div>
+      <div class="d2-sidebar">
+        <h3>Trees for Your Garden</h3>
+        <div class="meta">14 trees match your conditions</div>
+        <div class="d2-filter-row">
+          <button class="d2-filter active">All (14)</button>
+          <button class="d2-filter">Fruit (8)</button>
+          <button class="d2-filter">Ornamental (4)</button>
+          <button class="d2-filter">Screening (2)</button>
+          <button class="d2-filter">Low care</button>
+        </div>
+        <div class="d2-card">
+          <div class="d2-card-img">🍑</div>
+          <div class="d2-card-body">
+            <h4>European Plum</h4>
+            <div class="fit">Excellent fit for your garden</div>
+            <div class="why">Thrives in your Cfb climate. Tolerates your slightly acidic soil. Fruits reliably with minimal pruning.</div>
+          </div>
+          <div class="d2-card-action"><button class="d2-add-btn">+</button></div>
+        </div>
+        <div class="d2-card">
+          <div class="d2-card-img">🍒</div>
+          <div class="d2-card-body">
+            <h4>Morello Cherry</h4>
+            <div class="fit">Great fit — self-pollinating</div>
+            <div class="why">Unlike sweet cherries, Morello is self-fertile and handles your soil well. Compact size suits your space.</div>
+          </div>
+          <div class="d2-card-action"><button class="d2-add-btn">+</button></div>
+        </div>
+        <div class="d2-card">
+          <div class="d2-card-img">🍐</div>
+          <div class="d2-card-body">
+            <h4>Conference Pear</h4>
+            <div class="fit">Strong match — reliable producer</div>
+            <div class="why">A European classic that loves your conditions. Self-fertile, so a single tree will fruit.</div>
+          </div>
+          <div class="d2-card-action"><button class="d2-add-btn">+</button></div>
+        </div>
+        <div class="d2-renegotiate">
+          <input type="text" placeholder="I want at least one cherry tree..." />
+          <button>Refine</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DIRECTION 3: Mood-First Discovery -->
+<div class="direction" id="dir3">
+  <div class="direction-header">
+    <span class="tag tag-layout">Centered</span>
+    <span class="tag tag-density">Spacious</span>
+    <span class="tag tag-style">Spotify-Inspired</span>
+    <h2>Direction 3: Mood-First Discovery</h2>
+    <p>Spotify-inspired approach. Mood sets take center stage as the primary entry point. Users choose a vibe first, then see curated trees. Bypasses filter fatigue completely. Emotional, not analytical.</p>
+  </div>
+  <div class="mockup-frame">
+    <div class="d3-hero">
+      <div style="max-width: 900px; margin: 0 auto;">
+        <h2>Your garden in Lyon is ready for trees</h2>
+        <p>We analyzed your 600m² parcel — Cfb oceanic climate, slightly acidic soil, well-drained. Choose a vibe to get started.</p>
+      </div>
+    </div>
+    <div class="d3-mood-grid">
+      <div class="d3-mood-card">
+        <div class="emoji">🍎</div>
+        <h4>Low-Effort Abundance</h4>
+        <p>Fruit trees that practically take care of themselves. Plant, wait, harvest.</p>
+        <div class="count">8 trees match</div>
+      </div>
+      <div class="d3-mood-card">
+        <div class="emoji">🏰</div>
+        <h4>Privacy Fortress</h4>
+        <p>Dense, tall, year-round screening. Your garden, your sanctuary.</p>
+        <div class="count">5 trees match</div>
+      </div>
+      <div class="d3-mood-card">
+        <div class="emoji">🦋</div>
+        <h4>Pollinator Paradise</h4>
+        <p>Flowers, nectar, buzzing life. Turn your garden into an ecosystem.</p>
+        <div class="count">6 trees match</div>
+      </div>
+      <div class="d3-mood-card">
+        <div class="emoji">👶</div>
+        <h4>Kid-Friendly Orchard</h4>
+        <p>Safe, climbable, snackable. Trees the whole family will love.</p>
+        <div class="count">7 trees match</div>
+      </div>
+      <div class="d3-mood-card">
+        <div class="emoji">🌅</div>
+        <h4>Mediterranean Feel</h4>
+        <p>Warm vibes even in cooler climates. Hardy varieties with southern charm.</p>
+        <div class="count">4 trees match</div>
+      </div>
+      <div class="d3-mood-card">
+        <div class="emoji">🎨</div>
+        <h4>Four-Season Beauty</h4>
+        <p>Spring blossoms, summer shade, autumn color, winter structure.</p>
+        <div class="count">6 trees match</div>
+      </div>
+    </div>
+    <div class="d3-section">
+      <h3>From "Low-Effort Abundance"</h3>
+      <div class="d3-tree-row">
+        <div class="d3-tree-card">
+          <div class="d3-tree-img">🍑</div>
+          <div class="d3-tree-info">
+            <span class="fit-badge">Excellent fit</span>
+            <h4>European Plum</h4>
+            <p>Self-fertile, minimal pruning, reliable harvest. The ultimate low-effort fruit tree for your climate.</p>
+          </div>
+        </div>
+        <div class="d3-tree-card">
+          <div class="d3-tree-img">🍐</div>
+          <div class="d3-tree-info">
+            <span class="fit-badge">Strong match</span>
+            <h4>Conference Pear</h4>
+            <p>Fruits without a pollination partner. Handles your soil beautifully. Plant and enjoy for decades.</p>
+          </div>
+        </div>
+        <div class="d3-tree-card">
+          <div class="d3-tree-img">🫐</div>
+          <div class="d3-tree-info">
+            <span class="fit-badge">Great fit</span>
+            <h4>Elderberry</h4>
+            <p>Grows almost anywhere in your climate zone. Abundant berries, zero fuss. Wildlife will thank you too.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DIRECTION 4: Progressive Single Page -->
+<div class="direction" id="dir4">
+  <div class="direction-header">
+    <span class="tag tag-layout">Single Page</span>
+    <span class="tag tag-density">Focused</span>
+    <span class="tag tag-style">HTMX-Native</span>
+    <h2>Direction 4: Progressive Single Page</h2>
+    <p>One page, progressive revelation. Each section appears as the previous completes. Perfectly suited for HTMX partial swaps. The page grows as the user progresses — their journey is visible as they scroll up.</p>
+  </div>
+  <div class="mockup-frame">
+    <div style="padding: 16px 32px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-size: 16px; font-weight: 700; color: var(--primary);">🌳 Tree Manager</span>
+      <span style="font-size: 14px; color: var(--gray-500);">Sophie's Garden</span>
+    </div>
+    <div class="d4-container">
+      <div class="d4-progress">
+        <div class="d4-progress-step">
+          <div class="d4-progress-dot done">✓</div>
+        </div>
+        <div class="d4-progress-line done"></div>
+        <div class="d4-progress-step">
+          <div class="d4-progress-dot done">✓</div>
+        </div>
+        <div class="d4-progress-line done"></div>
+        <div class="d4-progress-step">
+          <div class="d4-progress-dot current">3</div>
+        </div>
+        <div class="d4-progress-line upcoming"></div>
+        <div class="d4-progress-step">
+          <div class="d4-progress-dot upcoming">4</div>
+        </div>
+      </div>
+
+      <div class="d4-section" style="opacity: 0.5;">
+        <div class="d4-section">
+          <span class="done-badge" style="display: inline-flex;">✓ Profile Complete</span>
+          <p style="font-size: 14px; color: var(--gray-500);">Fruit trees, ornamental • Low maintenance • Beginner</p>
+        </div>
+      </div>
+
+      <div class="d4-section">
+        <span class="done-badge" style="display: inline-flex;">✓ Parcel Analyzed</span>
+        <div class="d4-analysis-card">
+          <h4>Your Garden Profile</h4>
+          <div class="d4-analysis-row">
+            <span class="label">Climate Zone</span>
+            <span class="value">Cfb — Oceanic</span>
+          </div>
+          <div class="d4-analysis-row">
+            <span class="label">Soil pH</span>
+            <span class="value">6.2 — Slightly acidic</span>
+          </div>
+          <div class="d4-analysis-row">
+            <span class="label">Drainage</span>
+            <span class="value">Well-drained</span>
+          </div>
+          <div class="d4-analysis-row">
+            <span class="label">Parcel Size</span>
+            <span class="value">600 m²</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="d4-section">
+        <h3>Finding your perfect trees...</h3>
+        <div class="d4-thinking">
+          <div class="dots">● ● ●</div>
+          <p>Thinking...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DIRECTION 5: Dashboard with Sidebar -->
+<div class="direction" id="dir5">
+  <div class="direction-header">
+    <span class="tag tag-layout">Dashboard</span>
+    <span class="tag tag-density">Dense</span>
+    <span class="tag tag-style">App-Like</span>
+    <h2>Direction 5: Dashboard with Sidebar Navigation</h2>
+    <p>App-like dashboard layout with persistent sidebar navigation. Better for return users who manage multiple parcels and plans. More structure, more power-user friendly. Could overwhelm first-time users.</p>
+  </div>
+  <div class="mockup-frame">
+    <div class="d5-layout">
+      <div class="d5-sidebar">
+        <div class="logo">🌳 Tree Manager</div>
+        <nav>
+          <a href="#" class="active">📊 Dashboard</a>
+          <a href="#">🗺️ My Parcels</a>
+          <a href="#">🌳 Recommendations</a>
+          <a href="#">📋 My Plans</a>
+          <a href="#">🎭 Mood Discovery</a>
+          <a href="#">⚙️ Settings</a>
+        </nav>
+      </div>
+      <div class="d5-main">
+        <h2>Welcome back, Sophie</h2>
+        <div class="subtitle">Your garden in Lyon is looking great. Here's where you left off.</div>
+        <div class="d5-stats">
+          <div class="d5-stat-card">
+            <div class="label">Parcels</div>
+            <div class="value">2</div>
+            <div class="detail">Front garden + back orchard</div>
+          </div>
+          <div class="d5-stat-card">
+            <div class="label">Trees Saved</div>
+            <div class="value">7</div>
+            <div class="detail">Across 1 plan</div>
+          </div>
+          <div class="d5-stat-card">
+            <div class="label">Recommendations</div>
+            <div class="value">14</div>
+            <div class="detail">Based on your conditions</div>
+          </div>
+        </div>
+        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Your Plans</h3>
+        <div class="d5-plan-grid">
+          <div class="d5-plan-card">
+            <div class="d5-plan-card-header">
+              <h4>Back Orchard Plan</h4>
+              <span style="font-size: 12px; color: var(--primary); font-weight: 500;">7 trees</span>
+            </div>
+            <div class="d5-plan-card-body">
+              <div class="d5-tree-item"><span class="d5-tree-dot"></span><span>European Plum</span></div>
+              <div class="d5-tree-item"><span class="d5-tree-dot"></span><span>Morello Cherry</span></div>
+              <div class="d5-tree-item"><span class="d5-tree-dot"></span><span>Conference Pear</span></div>
+              <div class="d5-tree-item"><span class="d5-tree-dot" style="background: var(--gray-300);"></span><span style="color: var(--gray-500);">+ 4 more</span></div>
+            </div>
+          </div>
+          <div class="d5-plan-card" style="border: 2px dashed var(--gray-300); background: transparent;">
+            <div style="padding: 48px; text-align: center;">
+              <div style="font-size: 32px; margin-bottom: 8px; opacity: 0.3;">+</div>
+              <div style="font-size: 14px; color: var(--gray-500);">Create new plan</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DIRECTION 6: Card-Heavy Minimal -->
+<div class="direction" id="dir6">
+  <div class="direction-header">
+    <span class="tag tag-layout">Card Grid</span>
+    <span class="tag tag-density">Airy</span>
+    <span class="tag tag-style">Content-Forward</span>
+    <h2>Direction 6: Card-Heavy Minimal</h2>
+    <p>Content-forward design. Large, beautiful tree cards with prominent "why it fits" explanations. Minimal chrome, maximum content. The trees are the stars — everything else supports discovery.</p>
+  </div>
+  <div class="mockup-frame">
+    <div class="d6-topbar">
+      <span class="logo">🌳 Tree Manager</span>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <span style="font-size: 13px; color: var(--gray-500);">Lyon, France — 600m²</span>
+        <button style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 13px; font-family: inherit; cursor: pointer;">My Plan (3)</button>
+      </div>
+    </div>
+    <div class="d6-content">
+      <h2>Trees for Your Garden</h2>
+      <div class="subtitle">Personalized for your Cfb oceanic climate, slightly acidic well-drained soil.</div>
+      <div class="d6-results-header">
+        <h3>Recommended for You</h3>
+        <span class="count">14 trees match</span>
+      </div>
+      <div class="d6-tree-grid">
+        <div class="d6-tree-card">
+          <div class="d6-tree-card-img">🍑<span class="add-float">+</span></div>
+          <div class="d6-tree-card-body">
+            <h4>European Plum</h4>
+            <div class="latin">Prunus domestica</div>
+            <div class="why"><strong>Why it fits:</strong> Thrives in your Cfb climate and tolerates your slightly acidic soil. Self-fertile — one tree is enough. Fruits reliably with minimal pruning.</div>
+            <div class="d6-tree-tags">
+              <span class="d6-tree-tag good">Fruit</span>
+              <span class="d6-tree-tag good">Low care</span>
+              <span class="d6-tree-tag">Medium size</span>
+            </div>
+          </div>
+        </div>
+        <div class="d6-tree-card">
+          <div class="d6-tree-card-img">🍒<span class="add-float">+</span></div>
+          <div class="d6-tree-card-body">
+            <h4>Morello Cherry</h4>
+            <div class="latin">Prunus cerasus</div>
+            <div class="why"><strong>Why it fits:</strong> Unlike sweet cherries that struggle here, Morello is self-pollinating and handles your clay soil. Compact enough for your 600m² garden.</div>
+            <div class="d6-tree-tags">
+              <span class="d6-tree-tag good">Fruit</span>
+              <span class="d6-tree-tag good">Self-fertile</span>
+              <span class="d6-tree-tag">Compact</span>
+            </div>
+          </div>
+        </div>
+        <div class="d6-tree-card">
+          <div class="d6-tree-card-img">🍐<span class="add-float">+</span></div>
+          <div class="d6-tree-card-body">
+            <h4>Conference Pear</h4>
+            <div class="latin">Pyrus communis</div>
+            <div class="why"><strong>Why it fits:</strong> A European classic perfectly suited to your oceanic climate. Partially self-fertile — will fruit as a single tree. Reliable producer for decades.</div>
+            <div class="d6-tree-tags">
+              <span class="d6-tree-tag good">Fruit</span>
+              <span class="d6-tree-tag">Medium care</span>
+              <span class="d6-tree-tag">Medium size</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="comparison-bar">
+  <span>Explore all 6 directions using the tabs above. Mix and match elements you like.</span>
+  <span class="hint">These are conceptual directions — final design will combine the best elements.</span>
+</div>
+
+<script>
+function showDirection(n) {
+  document.querySelectorAll('.direction').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('dir' + n).classList.add('active');
+  document.querySelectorAll('.nav-tab')[n-1].classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

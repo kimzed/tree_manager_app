@@ -1,0 +1,118 @@
+# Workflow Status Template
+
+# This tracks progress through BMM methodology Analysis, Planning, and Solutioning phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2026-01-17"
+project: "tree_manager_app"
+project_type: "web-application"
+selected_track: "method"
+field_type: "greenfield"
+workflow_path: "method-greenfield.yaml"
+
+workflow_status:
+  # Phase 1: Analysis (Optional - User Selected)
+  - phase: 1
+    name: "Analysis"
+    workflows:
+      - id: "brainstorm-project"
+        name: "Brainstorming"
+        status: "optional"
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:brainstorming"
+
+      - id: "research"
+        name: "Research"
+        status: "optional"
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:research"
+
+      - id: "product-brief"
+        name: "Product Brief"
+        status: "_bmad-output/planning-artifacts/product-brief-tree_manager_app-2026-01-21.md"
+        completed: "2026-01-21"
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:create-product-brief"
+
+  # Phase 2: Planning
+  - phase: 2
+    name: "Planning"
+    workflows:
+      - id: "prd"
+        name: "Product Requirements Document"
+        status: "_bmad-output/planning-artifacts/prd.md"
+        completed: "2026-01-23"
+        agent: "pm"
+        command: "/bmad:bmm:workflows:prd"
+
+      - id: "create-ux-design"
+        name: "UX Design"
+        status: "_bmad-output/planning-artifacts/ux-design-specification.md"
+        completed: "2026-01-28"
+        agent: "ux-designer"
+        command: "/bmad:bmm:workflows:create-ux-design"
+
+  # Phase 3: Solutioning
+  - phase: 3
+    name: "Solutioning"
+    workflows:
+      - id: "create-architecture"
+        name: "Architecture"
+        status: "required"
+        agent: "architect"
+        command: "/bmad:bmm:workflows:create-architecture"
+
+      - id: "create-epics-and-stories"
+        name: "Epics & Stories"
+        status: "required"
+        agent: "pm"
+        command: "/bmad:bmm:workflows:create-epics-and-stories"
+
+      - id: "test-design"
+        name: "Test Design"
+        status: "optional"
+        agent: "tea"
+        command: "/bmad:bmm:workflows:testarch-test-design"
+
+      - id: "implementation-readiness"
+        name: "Implementation Readiness Check"
+        status: "required"
+        agent: "architect"
+        command: "/bmad:bmm:workflows:check-implementation-readiness"
+
+  # Phase 4: Implementation
+  - phase: 4
+    name: "Implementation"
+    workflows:
+      - id: "sprint-planning"
+        name: "Sprint Planning"
+        status: "required"
+        agent: "sm"
+        command: "/bmad:bmm:workflows:sprint-planning"
+        note: "Subsequent implementation tracked in sprint-status.yaml"
+
+# Discovery Selections
+brainstorm_requested: true
+research_requested: true
+product_brief_requested: true
+
+# User Description (captured during init)
+user_description: |
+  Web application for tree planning and management with interactive maps,
+  plot organization and yield forecasting. Target audience: project managers/designers
+  for orchards and agroforestry organizations. Features include tree species database
+  (public data: yield over lifespan, crown diameter, soil/climate requirements),
+  interactive mapping with vector points/polygons, dataset upload, and yield analysis
+  tools. Goal: "QGIS but more user-friendly" for non-technical users.
