@@ -70,9 +70,17 @@ workflow_status:
     workflows:
       - id: "create-architecture"
         name: "Architecture"
-        status: "required"
+        status: "_bmad-output/planning-artifacts/architecture.md"
+        completed: "2026-01-30"
         agent: "architect"
         command: "/bmad:bmm:workflows:create-architecture"
+
+      - id: "generate-project-context"
+        name: "Project Context"
+        status: "_bmad-output/project-context.md"
+        completed: "2026-01-30"
+        agent: "architect"
+        command: "/bmad:bmm:workflows:generate-project-context"
 
       - id: "create-epics-and-stories"
         name: "Epics & Stories"
