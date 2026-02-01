@@ -84,7 +84,8 @@ workflow_status:
 
       - id: "create-epics-and-stories"
         name: "Epics & Stories"
-        status: "required"
+        status: "_bmad-output/planning-artifacts/epics.md"
+        completed: "2026-02-01"
         agent: "pm"
         command: "/bmad:bmm:workflows:create-epics-and-stories"
 
