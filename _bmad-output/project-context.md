@@ -130,6 +130,16 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **ruff** enforces all Python style rules - run before committing
 - No manual style debates - ruff is the authority
 
+### Type Checking
+- **mypy --strict** on `apps/` and `config/` — enforced during dev-story validation (Step 7)
+- Tests excluded from mypy (`exclude = ["tests/", "test_"]`)
+- Uses `django-stubs` plugin for Django-aware type checking
+- Command: `uv run mypy apps/ config/`
+
+### Django System Check
+- Run `uv run python manage.py check` during validation to catch model/config issues
+- Must report 0 issues before marking a task complete
+
 ### File Organization
 - Django apps in `apps/` directory
 - Each app: `models.py`, `views.py`, `urls.py`, `services/` (if external calls)
@@ -160,6 +170,12 @@ npm run dev
 
 # Run tests
 uv run pytest
+
+# Type checking (strict, tests excluded)
+uv run mypy apps/ config/
+
+# Django system check
+uv run python manage.py check
 
 # Run ETL pipeline
 uv run python scripts/etl/build_tree_database.py
