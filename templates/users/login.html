@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Register - Tree Manager{% endblock %}
+{% block title %}Login - Tree Manager{% endblock %}
 
 {% block content %}
 <div class="flex justify-center">
   <div class="card w-full max-w-md bg-base-200 shadow-xl">
     <div class="card-body">
-      <h2 class="card-title text-2xl justify-center">Create Account</h2>
+      <h2 class="card-title text-2xl justify-center">Login</h2>
       <form method="post">
         {% csrf_token %}
         {% for field in form.visible_fields %}
@@ -30,11 +30,11 @@
         </div>
         {% endif %}
         <div class="form-control mt-6">
-          <button type="submit" class="btn btn-primary">Register</button>
+          <button type="submit" class="btn btn-primary">Login</button>
         </div>
       </form>
       <p class="text-center mt-4">
-        Already have an account? <a href="{% url 'users:login' %}" class="link link-primary">Login</a>
+        Don't have an account? <a href="{% url 'users:register' %}" class="link link-primary">Register</a>
       </p>
     </div>
   </div>
