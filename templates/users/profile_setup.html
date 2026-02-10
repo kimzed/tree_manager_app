@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Set Up Your Profile - Tree Manager{% endblock %}
+
+{% block content %}
+<div class="flex justify-center">
+  <div class="card w-full max-w-2xl bg-base-200 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title text-2xl justify-center mb-6">Set Up Your Profile</h2>
+      <form method="post">
+        {% csrf_token %}
+
+        <h3 class="text-lg font-semibold mb-3">What are your goals?</h3>
+        <p class="text-sm text-base-content/70 mb-4">Select all that apply</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
+          {% for value, label in form.goals.field.choices %}
+          <label class="card bg-base-100 cursor-pointer border-2 border-transparent has-[:checked]:border-primary has-[:checked]:bg-accent/10 transition-all">
+            <input type="checkbox" name="goals" value="{{ value }}" class="hidden"
+                   {% if value in form.goals.value %}checked{% endif %}>
+            <div class="card-body items-center text-center p-4">
+              <span class="font-bold">{{ label }}</span>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+
+        <h3 class="text-lg font-semibold mb-3">Maintenance level</h3>
+        <p class="text-sm text-base-content/70 mb-4">How much time can you dedicate?</p>
+        <div class="flex gap-3 mb-8">
+          {% for value, label in form.maintenance_level.field.choices %}
+          <label class="card bg-base-100 cursor-pointer border-2 border-transparent has-[:checked]:border-primary has-[:checked]:bg-accent/10 transition-all flex-1">
+            <input type="radio" name="maintenance_level" value="{{ value }}" class="hidden"
+                   {% if value == form.maintenance_level.value %}checked{% endif %}>
+            <div class="card-body items-center text-center p-4">
+              <span class="font-bold">{{ label }}</span>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+
+        <h3 class="text-lg font-semibold mb-3">Experience level</h3>
+        <p class="text-sm text-base-content/70 mb-4">How experienced are you with trees?</p>
+        <div class="flex gap-3 mb-8">
+          {% for value, label in form.experience_level.field.choices %}
+          <label class="card bg-base-100 cursor-pointer border-2 border-transparent has-[:checked]:border-primary has-[:checked]:bg-accent/10 transition-all flex-1">
+            <input type="radio" name="experience_level" value="{{ value }}" class="hidden"
+                   {% if value == form.experience_level.value %}checked{% endif %}>
+            <div class="card-body items-center text-center p-4">
+              <span class="font-bold">{{ label }}</span>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+
+        {% if form.errors %}
+        <div class="alert alert-error mb-4">
+          {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+            <span>{{ error }}</span>
+            {% endfor %}
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="form-control mt-6">
+          <button type="submit" class="btn btn-primary">Continue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

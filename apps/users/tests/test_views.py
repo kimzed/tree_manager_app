@@ -4,11 +4,11 @@ from apps.users.models import CustomUser
 
 
 @pytest.mark.django_db
-def test_successful_registration_redirects(user_data):
+def test_successful_registration_redirects_to_profile(user_data):
     client = Client()
     response = client.post("/users/register/", user_data)
     assert response.status_code == 302
-    assert response.url == "/"
+    assert response.url == "/users/profile/"
 
 
 @pytest.mark.django_db
@@ -39,11 +39,29 @@ def test_weak_password_shows_error():
 
 
 @pytest.mark.django_db
-def test_successful_login_redirects():
+def test_login_redirects_to_profile_when_incomplete():
     CustomUser.objects.create_user(
         username="loginuser",
         email="login@example.com",
         password="SecurePass123!",
+        profile_completed=False,
+    )
+    client = Client()
+    response = client.post(
+        "/users/login/",
+        {"username": "loginuser", "password": "SecurePass123!"},
+    )
+    assert response.status_code == 302
+    assert response.url == "/users/profile/"
+
+
+@pytest.mark.django_db
+def test_login_redirects_to_landing_when_profile_completed():
+    CustomUser.objects.create_user(
+        username="loginuser",
+        email="login@example.com",
+        password="SecurePass123!",
+        profile_completed=True,
     )
     client = Client()
     response = client.post(
@@ -93,3 +111,18 @@ def test_logout_rejects_get_request():
     client = Client()
     response = client.get("/users/logout/")
     assert response.status_code == 405
+
+
+@pytest.mark.django_db
+def test_landing_redirects_to_profile_when_incomplete():
+    CustomUser.objects.create_user(
+        username="incompleteuser",
+        email="incomplete@example.com",
+        password="SecurePass123!",
+        profile_completed=False,
+    )
+    client = Client()
+    client.login(username="incompleteuser", password="SecurePass123!")
+    response = client.get("/")
+    assert response.status_code == 302
+    assert response.url == "/users/profile/"
