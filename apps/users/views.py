@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from apps.users.forms import CustomUserCreationForm, ProfileSetupForm
@@ -26,17 +27,20 @@ def register(request: HttpRequest) -> HttpResponse:
 
 
 def login_view(request: HttpRequest) -> HttpResponse:
+    next_url = request.POST.get("next") or request.GET.get("next", "")
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
             if user.profile_completed:
                 return redirect("landing")
             return redirect("users:profile")
-        return render(request, "users/login.html", {"form": form})
+        return render(request, "users/login.html", {"form": form, "next": next_url})
     form = AuthenticationForm()
-    return render(request, "users/login.html", {"form": form})
+    return render(request, "users/login.html", {"form": form, "next": next_url})
 
 
 @require_POST

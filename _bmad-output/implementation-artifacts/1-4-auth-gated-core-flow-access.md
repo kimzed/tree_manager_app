@@ -1,6 +1,6 @@
 # Story 1.4: Auth-Gated Core Flow Access
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -15,14 +15,14 @@ So that user data (parcels, plans) can be persisted to their account.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Update login view to support `next` parameter redirect (AC: #1)
-  - [ ] 1.1 In `login_view`, on successful login, check `request.POST.get("next") or request.GET.get("next")` — if present and safe, redirect there instead of hardcoded route
-  - [ ] 1.2 In login template, add hidden input `<input type="hidden" name="next" value="{{ next }}">` to pass through the `next` parameter
-  - [ ] 1.3 In `login_view` GET handler, pass `next` from query string to template context
-- [ ] Task 2: Tests (AC: #1, #2)
-  - [ ] 2.1 Test login with `next` parameter redirects to the `next` URL after successful login
-  - [ ] 2.2 Test login without `next` parameter preserves existing redirect behavior (profile or landing)
-  - [ ] 2.3 Test `@login_required` view redirects to login with `next` parameter (use profile_setup as proxy — core flow views don't exist yet)
+- [x] Task 1: Update login view to support `next` parameter redirect (AC: #1)
+  - [x] 1.1 In `login_view`, on successful login, check `request.POST.get("next") or request.GET.get("next")` — if present and safe, redirect there instead of hardcoded route
+  - [x] 1.2 In login template, add hidden input `<input type="hidden" name="next" value="{{ next }}">` to pass through the `next` parameter
+  - [x] 1.3 In `login_view` GET handler, pass `next` from query string to template context
+- [x] Task 2: Tests (AC: #1, #2)
+  - [x] 2.1 Test login with `next` parameter redirects to the `next` URL after successful login
+  - [x] 2.2 Test login without `next` parameter preserves existing redirect behavior (profile or landing)
+  - [x] 2.3 Test `@login_required` view redirects to login with `next` parameter (use profile_setup as proxy — core flow views don't exist yet)
 
 ## Dev Notes
 
@@ -119,10 +119,25 @@ Files most recently modified in `apps/users/`:
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+None required.
+
 ### Completion Notes List
 
+- Task 1: Updated `login_view` to read `next` from POST/GET, validate with `url_has_allowed_host_and_scheme`, and redirect after login. Added hidden `next` input to login template. `next` passed to template context on both GET and failed POST.
+- Task 2: Added 3 tests — `test_login_with_next_redirects_to_next_url` (profile_completed user with next param overrides default redirect), `test_login_without_next_preserves_existing_redirect` (existing behavior unchanged), `test_login_required_redirects_with_next_parameter` (Django's @login_required appends next param). All 28 tests pass, mypy clean, Django check clean.
+- Code Review: Removed duplicate test `test_login_without_next_preserves_existing_redirect` (identical to `test_login_redirects_to_landing_when_profile_completed`). Added `test_login_with_external_next_url_ignores_it` (open redirect prevention). Added `test_failed_login_preserves_next_parameter` (next param survives failed login). 14 tests pass, mypy clean, Django check clean.
+
+### Change Log
+
+- 2026-02-10: Implemented next parameter redirect in login view and template, added 3 tests (Story 1.4)
+- 2026-02-10: Code review fixes — removed duplicate test, added open redirect prevention test, added failed login next preservation test
+
 ### File List
+
+- `apps/users/views.py` — added `url_has_allowed_host_and_scheme` import, updated `login_view` with `next` parameter handling
+- `templates/users/login.html` — added hidden `next` input field
+- `apps/users/tests/test_views.py` — 4 tests for next parameter redirect behavior (redirect with next, open redirect prevention, failed login preservation, @login_required next param)

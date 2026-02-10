@@ -9,6 +9,7 @@
       <h2 class="card-title text-2xl justify-center">Login</h2>
       <form method="post">
         {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
         {% for field in form.visible_fields %}
         <div class="form-control w-full mb-4">
           <label class="label" for="{{ field.id_for_label }}">

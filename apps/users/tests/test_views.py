@@ -114,6 +114,59 @@ def test_logout_rejects_get_request():
 
 
 @pytest.mark.django_db
+def test_login_with_next_redirects_to_next_url():
+    CustomUser.objects.create_user(
+        username="loginuser",
+        email="login@example.com",
+        password="SecurePass123!",
+        profile_completed=True,
+    )
+    client = Client()
+    response = client.post(
+        "/users/login/?next=/users/profile/",
+        {"username": "loginuser", "password": "SecurePass123!"},
+    )
+    assert response.status_code == 302
+    assert response.url == "/users/profile/"
+
+
+@pytest.mark.django_db
+def test_login_with_external_next_url_ignores_it():
+    CustomUser.objects.create_user(
+        username="loginuser",
+        email="login@example.com",
+        password="SecurePass123!",
+        profile_completed=True,
+    )
+    client = Client()
+    response = client.post(
+        "/users/login/?next=https://evil.com",
+        {"username": "loginuser", "password": "SecurePass123!"},
+    )
+    assert response.status_code == 302
+    assert response.url == "/"
+
+
+@pytest.mark.django_db
+def test_failed_login_preserves_next_parameter():
+    client = Client()
+    response = client.post(
+        "/users/login/?next=/users/profile/",
+        {"username": "nobody", "password": "wrong"},
+    )
+    assert b'name="next" value="/users/profile/"' in response.content
+
+
+@pytest.mark.django_db
+def test_login_required_redirects_with_next_parameter():
+    client = Client()
+    response = client.get("/users/profile/")
+    assert response.status_code == 302
+    assert "/users/login/" in response.url
+    assert "next=/users/profile/" in response.url
+
+
+@pytest.mark.django_db
 def test_landing_redirects_to_profile_when_incomplete():
     CustomUser.objects.create_user(
         username="incompleteuser",
