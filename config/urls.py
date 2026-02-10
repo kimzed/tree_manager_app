@@ -7,4 +7,5 @@ urlpatterns = [
     path("", landing, name="landing"),
     path("admin/", admin.site.urls),
     path("users/", include("apps.users.urls")),
+    path("parcels/", include("apps.parcels.urls")),
 ]

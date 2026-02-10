@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create Parcel - Tree Manager{% endblock %}
+
+{% block content %}
+<div class="relative w-full" style="height: calc(100vh - 8rem);">
+  <div id="parcels-map-container" class="w-full h-full rounded-lg"></div>
+
+  <div class="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-md px-4">
+    <form hx-post="{% url 'parcels:geocode' %}" hx-target="#parcels-geocode-result" class="join w-full">
+      {% csrf_token %}
+      <input type="text" name="address" placeholder="Search for an address..." class="input input-bordered join-item flex-1" />
+      <button type="submit" class="btn btn-primary join-item">Search</button>
+    </form>
+    <div id="parcels-geocode-result" class="mt-2"></div>
+  </div>
+
+  <input type="hidden" id="parcels-lat" name="latitude" />
+  <input type="hidden" id="parcels-lon" name="longitude" />
+</div>
+
+<script src="{% static 'js/map.js' %}"></script>
+{% endblock %}

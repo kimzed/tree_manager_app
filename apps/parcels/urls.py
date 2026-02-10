@@ -1,5 +1,10 @@
-from django.urls import URLPattern
+from django.urls import path
+
+from apps.parcels import views
 
 app_name = "parcels"
 
-urlpatterns: list[URLPattern] = []
+urlpatterns = [
+    path("create/", views.parcel_create, name="create"),
+    path("geocode/", views.geocode_address_view, name="geocode"),
+]
