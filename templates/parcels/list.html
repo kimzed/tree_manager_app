@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}My Parcels - Tree Manager{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">My Parcels</h1>
+    <a href="{% url 'parcels:create' %}" class="btn btn-primary">Add new parcel</a>
+  </div>
+
+  {% if parcels %}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for parcel in parcels %}
+    <div class="card bg-base-200 shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title text-lg">{{ parcel }}</h2>
+        <p class="text-sm text-base-content/70">{{ parcel.area_m2|floatformat:0 }} m²</p>
+        <p class="text-xs text-base-content/50">{{ parcel.created_at|date:"N j, Y" }}</p>
+        <div class="card-actions justify-end mt-2">
+          <a href="{% url 'parcels:detail' parcel.pk %}" class="btn btn-sm btn-ghost">Select</a>
+          <a href="{% url 'parcels:edit' parcel.pk %}" class="btn btn-sm btn-ghost">Edit</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-16 text-base-content/60">
+    <p class="text-lg mb-4">No parcels yet — draw your first garden boundary</p>
+    <a href="{% url 'parcels:create' %}" class="btn btn-primary">Draw your first parcel</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

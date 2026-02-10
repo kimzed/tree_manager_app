@@ -161,3 +161,163 @@ def test_parcel_save_invalid_geojson_structure_returns_error_partial(user):
         "area_m2": "450.50",
     })
     assert b"Could not save parcel" in response.content
+
+
+# --- Story 2.3: Parcel list view tests ---
+
+
+@pytest.mark.django_db
+def test_parcel_list_requires_login():
+    client = Client()
+    response = client.get("/parcels/")
+    assert response.status_code == 302 and "/users/login/" in response.url
+
+
+@pytest.mark.django_db
+def test_parcel_list_shows_own_parcels(user):
+    Parcel.objects.create(user=user, name="My Parcel", polygon=SAMPLE_POLYGON, area_m2=100.0)
+    client = Client()
+    client.force_login(user)
+    response = client.get("/parcels/")
+    assert b"My Parcel" in response.content
+
+
+@pytest.mark.django_db
+def test_parcel_list_excludes_other_users_parcels(user):
+    from django.contrib.auth import get_user_model
+    other_user = get_user_model().objects.create_user(
+        username="otheruser", email="other@example.com", password="SecurePass123!",
+    )
+    Parcel.objects.create(user=other_user, name="Other Parcel", polygon=SAMPLE_POLYGON, area_m2=200.0)
+    client = Client()
+    client.force_login(user)
+    response = client.get("/parcels/")
+    assert b"Other Parcel" not in response.content
+
+
+# --- Story 2.3: Parcel detail view tests ---
+
+
+@pytest.mark.django_db
+def test_parcel_detail_returns_correct_parcel_for_owner(user):
+    parcel = Parcel.objects.create(user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=300.0)
+    client = Client()
+    client.force_login(user)
+    response = client.get(f"/parcels/{parcel.pk}/")
+    assert response.status_code == 200
+    assert b"Garden" in response.content
+
+
+@pytest.mark.django_db
+def test_parcel_detail_returns_404_for_other_users_parcel(user):
+    from django.contrib.auth import get_user_model
+    other_user = get_user_model().objects.create_user(
+        username="otheruser", email="other@example.com", password="SecurePass123!",
+    )
+    parcel = Parcel.objects.create(user=other_user, name="Secret", polygon=SAMPLE_POLYGON, area_m2=100.0)
+    client = Client()
+    client.force_login(user)
+    response = client.get(f"/parcels/{parcel.pk}/")
+    assert response.status_code == 404
+
+
+# --- Story 2.3: Parcel edit view tests ---
+
+
+@pytest.mark.django_db
+def test_parcel_edit_loads_parcel_data_for_owner(user):
+    parcel = Parcel.objects.create(user=user, name="Editable", polygon=SAMPLE_POLYGON, area_m2=500.0)
+    client = Client()
+    client.force_login(user)
+    response = client.get(f"/parcels/{parcel.pk}/edit/")
+    assert response.status_code == 200
+    assert b"Editable" in response.content
+
+
+@pytest.mark.django_db
+def test_parcel_edit_returns_404_for_other_users_parcel(user):
+    from django.contrib.auth import get_user_model
+    other_user = get_user_model().objects.create_user(
+        username="otheruser", email="other@example.com", password="SecurePass123!",
+    )
+    parcel = Parcel.objects.create(user=other_user, name="Secret", polygon=SAMPLE_POLYGON, area_m2=100.0)
+    client = Client()
+    client.force_login(user)
+    response = client.get(f"/parcels/{parcel.pk}/edit/")
+    assert response.status_code == 404
+
+
+# --- Story 2.3: Parcel update view tests ---
+
+
+@pytest.mark.django_db
+def test_parcel_update_saves_new_polygon_for_owner(user):
+    parcel = Parcel.objects.create(user=user, polygon=SAMPLE_POLYGON, area_m2=100.0)
+    new_polygon = {
+        "type": "Polygon",
+        "coordinates": [[[2.37, 48.87], [2.38, 48.87], [2.38, 48.88], [2.37, 48.87]]],
+    }
+    client = Client()
+    client.force_login(user)
+    client.post(f"/parcels/{parcel.pk}/update/", {
+        "polygon": json.dumps(new_polygon),
+        "area_m2": "750.00",
+    })
+    parcel.refresh_from_db()
+    assert parcel.polygon == new_polygon
+
+
+@pytest.mark.django_db
+def test_parcel_update_returns_404_for_other_users_parcel(user):
+    from django.contrib.auth import get_user_model
+    other_user = get_user_model().objects.create_user(
+        username="otheruser", email="other@example.com", password="SecurePass123!",
+    )
+    parcel = Parcel.objects.create(user=other_user, polygon=SAMPLE_POLYGON, area_m2=100.0)
+    client = Client()
+    client.force_login(user)
+    response = client.post(f"/parcels/{parcel.pk}/update/", {
+        "polygon": json.dumps(SAMPLE_POLYGON),
+        "area_m2": "500.00",
+    })
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_parcel_update_rejects_get_request(user):
+    parcel = Parcel.objects.create(user=user, polygon=SAMPLE_POLYGON, area_m2=100.0)
+    client = Client()
+    client.force_login(user)
+    response = client.get(f"/parcels/{parcel.pk}/update/")
+    assert response.status_code == 405
+
+
+@pytest.mark.django_db
+def test_parcel_update_missing_polygon_returns_error_partial(user):
+    parcel = Parcel.objects.create(user=user, polygon=SAMPLE_POLYGON, area_m2=100.0)
+    client = Client()
+    client.force_login(user)
+    response = client.post(f"/parcels/{parcel.pk}/update/", {"area_m2": "500.00"})
+    assert b"Could not save parcel" in response.content
+
+
+# --- Story 2.3: Multiple parcels test ---
+
+
+@pytest.mark.django_db
+def test_creating_multiple_parcels_for_same_user(user):
+    client = Client()
+    client.force_login(user)
+    client.post("/parcels/save/", {
+        "polygon": json.dumps(SAMPLE_POLYGON),
+        "area_m2": "100.00",
+        "latitude": "48.85",
+        "longitude": "2.35",
+    })
+    client.post("/parcels/save/", {
+        "polygon": json.dumps(SAMPLE_POLYGON),
+        "area_m2": "200.00",
+        "latitude": "48.86",
+        "longitude": "2.36",
+    })
+    assert Parcel.objects.filter(user=user).count() == 2

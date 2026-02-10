@@ -9,6 +9,17 @@
     { attribution: "Tiles &copy; Esri", maxZoom: 19 }
   ).addTo(map);
 
+  // View-only mode: display polygon without draw controls
+  if (mapElement.dataset.viewOnly === "true") {
+    var viewPolygon = mapElement.dataset.polygon;
+    if (viewPolygon && viewPolygon !== "null") {
+      var displayLayer = L.geoJSON(JSON.parse(viewPolygon));
+      displayLayer.addTo(map);
+      map.fitBounds(displayLayer.getBounds());
+    }
+    return;
+  }
+
   var marker = null;
 
   function placeMarker(lat, lon) {
@@ -66,6 +77,8 @@
     document.getElementById("parcels-area-display").classList.remove("hidden");
     document.getElementById("parcels-save-btn").classList.remove("hidden");
     document.getElementById("parcels-clear-btn").classList.remove("hidden");
+    var nameInput = document.getElementById("parcels-name-input");
+    if (nameInput) nameInput.classList.remove("hidden");
   }
 
   map.on(L.Draw.Event.CREATED, function (event) {
@@ -92,6 +105,8 @@
     document.getElementById("parcels-area-display").classList.add("hidden");
     document.getElementById("parcels-save-btn").classList.add("hidden");
     document.getElementById("parcels-clear-btn").classList.add("hidden");
+    var nameInput = document.getElementById("parcels-name-input");
+    if (nameInput) nameInput.classList.add("hidden");
     document.getElementById("parcels-save-result").innerHTML = "";
   }
 
@@ -105,8 +120,27 @@
 
   // Hide save button after successful save to prevent duplicates
   document.body.addEventListener("htmx:afterSwap", function (event) {
-    if (event.detail.target.id === "parcels-save-result" && event.detail.target.querySelector(".alert-success")) {
+    var targetId = event.detail.target.id;
+    if (
+      (targetId === "parcels-save-result" || targetId === "parcels-update-result") &&
+      event.detail.target.querySelector(".alert-success")
+    ) {
       document.getElementById("parcels-save-btn").classList.add("hidden");
     }
   });
+
+  // Section 5: Edit mode — load existing polygon from data attribute
+  function initEditMode(geojsonData) {
+    if (!geojsonData) return;
+
+    var layer = L.geoJSON(geojsonData).getLayers()[0];
+    drawnItems.addLayer(layer);
+    map.fitBounds(layer.getBounds());
+    updatePolygonUI(layer);
+  }
+
+  var existingPolygon = mapElement.dataset.polygon;
+  if (existingPolygon && existingPolygon !== "null") {
+    initEditMode(JSON.parse(existingPolygon));
+  }
 })();

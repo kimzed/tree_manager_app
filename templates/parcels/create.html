@@ -22,10 +22,11 @@
   <div id="parcels-area-display" class="absolute bottom-20 left-1/2 -translate-x-1/2 z-[1000] badge badge-lg badge-info hidden"></div>
 
   <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] flex gap-2">
-    <form hx-post="{% url 'parcels:save' %}" hx-target="#parcels-save-result" hx-include="#parcels-lat, #parcels-lon">
+    <form hx-post="{% url 'parcels:save' %}" hx-target="#parcels-save-result" hx-include="#parcels-lat, #parcels-lon" class="flex gap-2 items-center">
       {% csrf_token %}
       <input type="hidden" id="parcels-polygon" name="polygon" />
       <input type="hidden" id="parcels-area" name="area_m2" />
+      <input type="text" name="name" id="parcels-name-input" placeholder="Parcel name (optional)" class="input input-bordered input-sm w-48 hidden" />
       <button type="submit" id="parcels-save-btn" class="btn btn-success hidden">Save Parcel</button>
     </form>
     <button type="button" id="parcels-clear-btn" class="btn btn-warning hidden">Clear &amp; Redraw</button>

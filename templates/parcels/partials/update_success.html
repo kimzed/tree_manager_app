@@ -1,0 +1,4 @@
+<div class="alert alert-success text-sm">
+  <span>Parcel updated! Area: {{ parcel.area_m2|floatformat:0 }} m²</span>
+  <a href="{% url 'parcels:detail' parcel.pk %}" class="link link-hover">Back to parcel</a>
+</div>

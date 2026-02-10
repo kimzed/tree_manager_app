@@ -49,7 +49,7 @@ development_status:
   epic-2: in-progress
   2-1-location-input-and-map-display: done
   2-2-parcel-drawing-and-area-calculation: done
-  2-3-parcel-editing-and-multiple-parcels: backlog
+  2-3-parcel-editing-and-multiple-parcels: done
   2-4-koppen-climate-zone-analysis: backlog
   2-5-soilgrids-integration: backlog
   2-6-unified-parcel-profile: backlog
