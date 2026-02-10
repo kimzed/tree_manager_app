@@ -18,6 +18,20 @@
 
   <input type="hidden" id="parcels-lat" name="latitude" />
   <input type="hidden" id="parcels-lon" name="longitude" />
+
+  <div id="parcels-area-display" class="absolute bottom-20 left-1/2 -translate-x-1/2 z-[1000] badge badge-lg badge-info hidden"></div>
+
+  <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] flex gap-2">
+    <form hx-post="{% url 'parcels:save' %}" hx-target="#parcels-save-result" hx-include="#parcels-lat, #parcels-lon">
+      {% csrf_token %}
+      <input type="hidden" id="parcels-polygon" name="polygon" />
+      <input type="hidden" id="parcels-area" name="area_m2" />
+      <button type="submit" id="parcels-save-btn" class="btn btn-success hidden">Save Parcel</button>
+    </form>
+    <button type="button" id="parcels-clear-btn" class="btn btn-warning hidden">Clear &amp; Redraw</button>
+  </div>
+
+  <div id="parcels-save-result" class="absolute bottom-28 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-md px-4"></div>
 </div>
 
 <script src="{% static 'js/map.js' %}"></script>

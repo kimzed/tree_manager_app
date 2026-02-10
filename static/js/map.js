@@ -36,4 +36,77 @@
     placeMarker(lat, lon);
     map.setView([lat, lon], 17);
   });
+
+  // Section 3: leaflet-draw polygon drawing
+  var drawnItems = new L.FeatureGroup();
+  map.addLayer(drawnItems);
+
+  var drawControl = new L.Control.Draw({
+    draw: {
+      polygon: true,
+      polyline: false,
+      rectangle: false,
+      circle: false,
+      marker: false,
+      circlemarker: false,
+    },
+    edit: { featureGroup: drawnItems },
+  });
+  map.addControl(drawControl);
+
+  function updatePolygonUI(layer) {
+    var latlngs = layer.getLatLngs()[0];
+    var area = L.GeometryUtil.geodesicArea(latlngs);
+    var geojson = layer.toGeoJSON().geometry;
+
+    document.getElementById("parcels-polygon").value = JSON.stringify(geojson);
+    document.getElementById("parcels-area").value = area.toFixed(2);
+    document.getElementById("parcels-area-display").textContent =
+      Math.round(area) + " m²";
+    document.getElementById("parcels-area-display").classList.remove("hidden");
+    document.getElementById("parcels-save-btn").classList.remove("hidden");
+    document.getElementById("parcels-clear-btn").classList.remove("hidden");
+  }
+
+  map.on(L.Draw.Event.CREATED, function (event) {
+    drawnItems.clearLayers();
+    drawnItems.addLayer(event.layer);
+    document.getElementById("parcels-save-result").innerHTML = "";
+    updatePolygonUI(event.layer);
+  });
+
+  map.on(L.Draw.Event.EDITED, function (event) {
+    event.layers.eachLayer(function (layer) {
+      updatePolygonUI(layer);
+    });
+  });
+
+  map.on(L.Draw.Event.DELETED, function () {
+    clearPolygon();
+  });
+
+  function clearPolygon() {
+    drawnItems.clearLayers();
+    document.getElementById("parcels-polygon").value = "";
+    document.getElementById("parcels-area").value = "";
+    document.getElementById("parcels-area-display").classList.add("hidden");
+    document.getElementById("parcels-save-btn").classList.add("hidden");
+    document.getElementById("parcels-clear-btn").classList.add("hidden");
+    document.getElementById("parcels-save-result").innerHTML = "";
+  }
+
+  // Section 4: Clear button click handler
+  var clearBtn = document.getElementById("parcels-clear-btn");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", function () {
+      clearPolygon();
+    });
+  }
+
+  // Hide save button after successful save to prevent duplicates
+  document.body.addEventListener("htmx:afterSwap", function (event) {
+    if (event.detail.target.id === "parcels-save-result" && event.detail.target.querySelector(".alert-success")) {
+      document.getElementById("parcels-save-btn").classList.add("hidden");
+    }
+  });
 })();
