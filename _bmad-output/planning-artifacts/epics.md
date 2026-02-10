@@ -322,6 +322,21 @@ So that user data (parcels, plans) can be persisted to their account.
 **When** I navigate to the core flow
 **Then** I can access all features without interruption
 
+**Given** the DaisyUI theme is configured
+**When** any page loads
+**Then** the custom garden theme is applied (forest green primary `#2D6A4F`, warm amber secondary `#D4A373`, sage accent `#95D5B2`, warm cream backgrounds `#F5F0EB` per UX spec)
+**And** Inter font is loaded and applied per the typography system
+
+**Given** the profile setup page is loaded
+**When** I view the profile setup
+**Then** the card-based UI matches the UX mockup Direction 1 (Clean Stacked Flow) from `_bmad-output/planning-artifacts/ux-design-directions.html`
+**And** goal cards display emojis above labels (e.g. `🍎 Fruit Trees`, `🌿 Privacy`, `🍂 Shade`, `🐝 Pollinators`, `🌸 Ornamental`)
+**And** goal cards show short descriptions under labels (e.g. "Harvest your own", "Screening & hedges")
+**And** a step progress indicator is visible at the top showing the user's position in the onboarding flow
+**And** the page has a hero section with gradient background and contextual heading (e.g. "What are you hoping to grow?")
+
+**Technical scope:** Auth middleware/decorator for core flow routes, `next` parameter handling for post-login redirect. DaisyUI custom theme configuration in `tailwind.config.js` (color palette, border radius, spacing per UX design specification). Inter font import. Update `templates/users/profile_setup.html` to match Direction 1 mockup visual polish (emojis, descriptions, step indicator, hero gradient). Reference mockup: `_bmad-output/planning-artifacts/ux-design-directions.html` Direction 1.
+
 ---
 
 ### Epic 2 Stories
