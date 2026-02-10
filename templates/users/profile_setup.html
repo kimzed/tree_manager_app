@@ -3,70 +3,78 @@
 {% block title %}Set Up Your Profile - Tree Manager{% endblock %}
 
 {% block content %}
-<div class="flex justify-center">
-  <div class="card w-full max-w-2xl bg-base-200 shadow-xl">
-    <div class="card-body">
-      <h2 class="card-title text-2xl justify-center mb-6">Set Up Your Profile</h2>
-      <form method="post">
-        {% csrf_token %}
-
-        <h3 class="text-lg font-semibold mb-3">What are your goals?</h3>
-        <p class="text-sm text-base-content/70 mb-4">Select all that apply</p>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
-          {% for value, label in form.goals.field.choices %}
-          <label class="card bg-base-100 cursor-pointer border-2 border-transparent has-[:checked]:border-primary has-[:checked]:bg-accent/10 transition-all">
-            <input type="checkbox" name="goals" value="{{ value }}" class="hidden"
-                   {% if value in form.goals.value %}checked{% endif %}>
-            <div class="card-body items-center text-center p-4">
-              <span class="font-bold">{{ label }}</span>
-            </div>
-          </label>
-          {% endfor %}
-        </div>
-
-        <h3 class="text-lg font-semibold mb-3">Maintenance level</h3>
-        <p class="text-sm text-base-content/70 mb-4">How much time can you dedicate?</p>
-        <div class="flex gap-3 mb-8">
-          {% for value, label in form.maintenance_level.field.choices %}
-          <label class="card bg-base-100 cursor-pointer border-2 border-transparent has-[:checked]:border-primary has-[:checked]:bg-accent/10 transition-all flex-1">
-            <input type="radio" name="maintenance_level" value="{{ value }}" class="hidden"
-                   {% if value == form.maintenance_level.value %}checked{% endif %}>
-            <div class="card-body items-center text-center p-4">
-              <span class="font-bold">{{ label }}</span>
-            </div>
-          </label>
-          {% endfor %}
-        </div>
-
-        <h3 class="text-lg font-semibold mb-3">Experience level</h3>
-        <p class="text-sm text-base-content/70 mb-4">How experienced are you with trees?</p>
-        <div class="flex gap-3 mb-8">
-          {% for value, label in form.experience_level.field.choices %}
-          <label class="card bg-base-100 cursor-pointer border-2 border-transparent has-[:checked]:border-primary has-[:checked]:bg-accent/10 transition-all flex-1">
-            <input type="radio" name="experience_level" value="{{ value }}" class="hidden"
-                   {% if value == form.experience_level.value %}checked{% endif %}>
-            <div class="card-body items-center text-center p-4">
-              <span class="font-bold">{{ label }}</span>
-            </div>
-          </label>
-          {% endfor %}
-        </div>
-
-        {% if form.errors %}
-        <div class="alert alert-error mb-4">
-          {% for field, errors in form.errors.items %}
-            {% for error in errors %}
-            <span>{{ error }}</span>
-            {% endfor %}
-          {% endfor %}
-        </div>
-        {% endif %}
-
-        <div class="form-control mt-6">
-          <button type="submit" class="btn btn-primary">Continue</button>
-        </div>
-      </form>
-    </div>
+<!-- Hero section matching Direction 1: vertical gradient, light green to white -->
+<div class="bg-gradient-to-b from-[#F0F7F4] to-white -mx-4 -mt-8 px-8 py-16 text-center mb-12">
+  <!-- Step indicator: thin bars matching mockup -->
+  <div class="flex justify-center gap-2 mb-8">
+    <div class="h-1 w-16 rounded-full bg-primary"></div>
+    <div class="h-1 w-10 rounded-full bg-base-300"></div>
+    <div class="h-1 w-10 rounded-full bg-base-300"></div>
   </div>
+  <h1 class="text-3xl font-bold mb-3">What are you hoping to grow?</h1>
+  <p class="text-lg text-base-content/60 max-w-lg mx-auto">Tell us about your goals and we'll find trees that match your vision perfectly.</p>
+</div>
+
+<!-- Profile sections: open flowing layout, no card wrapper -->
+<div class="max-w-2xl mx-auto">
+  <form method="post">
+    {% csrf_token %}
+
+    <h3 class="text-xl font-semibold mb-2">Your Goals</h3>
+    <p class="text-sm text-base-content/60 mb-6">Select all that apply — we'll tailor your recommendations.</p>
+    <div class="grid grid-cols-3 gap-3 mb-10">
+      {% for value, label, emoji, description in enriched_goals %}
+      <label class="py-5 px-4 border-2 border-base-300 rounded-xl text-center cursor-pointer hover:border-primary hover:bg-[#F0F7F4] has-[:checked]:border-primary has-[:checked]:bg-[#F0F7F4] transition-all">
+        <input type="checkbox" name="goals" value="{{ value }}" class="hidden"
+               {% if value in form.goals.value %}checked{% endif %}>
+        <div class="text-3xl mb-2">{{ emoji }}</div>
+        <div class="text-sm font-semibold">{{ label }}</div>
+        <div class="text-xs text-base-content/60 mt-1">{{ description }}</div>
+      </label>
+      {% endfor %}
+    </div>
+
+    <h3 class="text-xl font-semibold mb-2">Maintenance Level</h3>
+    <p class="text-sm text-base-content/60 mb-6">How much time do you want to spend caring for your trees?</p>
+    <div class="grid grid-cols-3 gap-3 mb-10">
+      {% for value, label in form.maintenance_level.field.choices %}
+      <label class="py-5 px-4 border-2 border-base-300 rounded-xl text-center cursor-pointer hover:border-primary hover:bg-[#F0F7F4] has-[:checked]:border-primary has-[:checked]:bg-[#F0F7F4] transition-all">
+        <input type="radio" name="maintenance_level" value="{{ value }}" class="hidden"
+               {% if value == form.maintenance_level.value %}checked{% endif %}>
+        <div class="text-3xl mb-2">{% if value == "low" %}😌{% elif value == "medium" %}🙂{% else %}🧑‍🌾{% endif %}</div>
+        <div class="text-sm font-semibold">{% if value == "low" %}Low Effort{% elif value == "medium" %}Some Care{% else %}Hands On{% endif %}</div>
+        <div class="text-xs text-base-content/60 mt-1">{% if value == "low" %}Plant and forget{% elif value == "medium" %}Occasional pruning{% else %}I enjoy the work{% endif %}</div>
+      </label>
+      {% endfor %}
+    </div>
+
+    <h3 class="text-xl font-semibold mb-2">Experience Level</h3>
+    <p class="text-sm text-base-content/60 mb-6">How experienced are you with trees?</p>
+    <div class="grid grid-cols-3 gap-3 mb-10">
+      {% for value, label in form.experience_level.field.choices %}
+      <label class="py-5 px-4 border-2 border-base-300 rounded-xl text-center cursor-pointer hover:border-primary hover:bg-[#F0F7F4] has-[:checked]:border-primary has-[:checked]:bg-[#F0F7F4] transition-all">
+        <input type="radio" name="experience_level" value="{{ value }}" class="hidden"
+               {% if value == form.experience_level.value %}checked{% endif %}>
+        <div class="text-3xl mb-2">{% if value == "beginner" %}🌱{% elif value == "intermediate" %}🌿{% else %}🌳{% endif %}</div>
+        <div class="text-sm font-semibold">{{ label }}</div>
+        <div class="text-xs text-base-content/60 mt-1">{% if value == "beginner" %}Just getting started{% elif value == "intermediate" %}Some growing experience{% else %}Seasoned green thumb{% endif %}</div>
+      </label>
+      {% endfor %}
+    </div>
+
+    {% if form.errors %}
+    <div class="alert alert-error mb-4">
+      {% for field, errors in form.errors.items %}
+        {% for error in errors %}
+        <span>{{ error }}</span>
+        {% endfor %}
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-8 mb-12">
+      <button type="submit" class="btn btn-primary px-8">Continue</button>
+    </div>
+  </form>
 </div>
 {% endblock %}

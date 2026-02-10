@@ -10,6 +10,7 @@ from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
+from apps.users.constants import GOAL_CHOICES, GOAL_DETAILS
 from apps.users.forms import CustomUserCreationForm, ProfileSetupForm
 from apps.users.models import CustomUser
 
@@ -52,6 +53,10 @@ def logout_view(request: HttpRequest) -> HttpResponse:
 @login_required
 def profile_setup(request: HttpRequest) -> HttpResponse:
     user = cast(CustomUser, request.user)
+    enriched_goals = [
+        (value, label, GOAL_DETAILS[value]["emoji"], GOAL_DETAILS[value]["description"])
+        for value, label in GOAL_CHOICES
+    ]
     if request.method == "POST":
         form = ProfileSetupForm(request.POST)
         if form.is_valid():
@@ -61,7 +66,7 @@ def profile_setup(request: HttpRequest) -> HttpResponse:
             user.profile_completed = True
             user.save()
             return redirect("landing")
-        return render(request, "users/profile_setup.html", {"form": form})
+        return render(request, "users/profile_setup.html", {"form": form, "enriched_goals": enriched_goals})
     form = ProfileSetupForm(
         initial={
             "goals": user.goals,
@@ -69,7 +74,7 @@ def profile_setup(request: HttpRequest) -> HttpResponse:
             "experience_level": user.experience_level,
         }
     )
-    return render(request, "users/profile_setup.html", {"form": form})
+    return render(request, "users/profile_setup.html", {"form": form, "enriched_goals": enriched_goals})
 
 
 def landing(request: HttpRequest) -> HttpResponse:
