@@ -322,10 +322,21 @@ So that user data (parcels, plans) can be persisted to their account.
 **When** I navigate to the core flow
 **Then** I can access all features without interruption
 
-**Given** the DaisyUI theme is configured
-**When** any page loads
-**Then** the custom garden theme is applied (forest green primary `#2D6A4F`, warm amber secondary `#D4A373`, sage accent `#95D5B2`, warm cream backgrounds `#F5F0EB` per UX spec)
-**And** Inter font is loaded and applied per the typography system
+**Technical scope:** `next` parameter handling in login view for post-login redirect. `@login_required` decorator enforcement on core flow routes.
+
+---
+
+#### Story 1.5: Profile Onboarding UI Polish
+
+As a user,
+I want the profile setup page to feel polished and visually guided,
+So that onboarding is intuitive and matches the intended design direction.
+
+**Acceptance Criteria:**
+
+**Given** any page loads
+**When** the page renders
+**Then** Inter font is loaded and applied as the default sans-serif font per the typography system
 
 **Given** the profile setup page is loaded
 **When** I view the profile setup
@@ -335,7 +346,7 @@ So that user data (parcels, plans) can be persisted to their account.
 **And** a step progress indicator is visible at the top showing the user's position in the onboarding flow
 **And** the page has a hero section with gradient background and contextual heading (e.g. "What are you hoping to grow?")
 
-**Technical scope:** Auth middleware/decorator for core flow routes, `next` parameter handling for post-login redirect. DaisyUI custom theme configuration in `tailwind.config.js` (color palette, border radius, spacing per UX design specification). Inter font import. Update `templates/users/profile_setup.html` to match Direction 1 mockup visual polish (emojis, descriptions, step indicator, hero gradient). Reference mockup: `_bmad-output/planning-artifacts/ux-design-directions.html` Direction 1.
+**Technical scope:** Inter font import via Google Fonts + Tailwind fontFamily config. `GOAL_DETAILS` metadata in constants. Profile setup template updates: hero section, step progress indicator, emoji cards, descriptions per UX Direction 1.
 
 ---
 
