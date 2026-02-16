@@ -15,7 +15,7 @@
   <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-draw@1.0/dist/leaflet.draw.js"></script>
 </head>
-<body class="min-h-screen bg-base-100">
+<body class="min-h-screen bg-base-100" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   {% include "components/nav.html" %}
   <main class="container mx-auto px-4 py-8">
     {% block content %}{% endblock %}
