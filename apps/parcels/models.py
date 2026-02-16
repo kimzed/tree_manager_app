@@ -15,6 +15,7 @@ class Parcel(models.Model):
     longitude = models.FloatField(null=True, blank=True)
     polygon = models.JSONField(null=True, blank=True)
     area_m2 = models.FloatField(null=True, blank=True)
+    climate_zone = models.CharField(max_length=100, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

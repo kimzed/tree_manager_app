@@ -91,3 +91,5 @@ LOGIN_URL = "/users/login/"
 LOGIN_REDIRECT_URL = "/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+KOPPEN_GEOTIFF_PATH = BASE_DIR / "data" / "koppen" / "Beck_KG_V1_present_0p0083.tif"

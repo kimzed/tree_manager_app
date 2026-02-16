@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404, render
 
 from apps.parcels.models import Parcel
 from apps.parcels.services.geocoding import GeocodingError, geocode_address
+from apps.parcels.services.koppen import KoppenError, get_koppen_zone
 from apps.users.models import CustomUser
 
 
@@ -143,3 +144,27 @@ def parcel_save(request: HttpRequest) -> HttpResponse:
         longitude=parsed_lon,
     )
     return render(request, "parcels/partials/save_success.html", {"parcel": parcel})
+
+
+@require_POST
+@login_required
+def parcel_analyze(request: HttpRequest, pk: int) -> HttpResponse:
+    parcel = get_object_or_404(Parcel, pk=pk, user=request.user)
+
+    if parcel.latitude is None or parcel.longitude is None:
+        return render(request, "parcels/partials/analysis_error.html", {
+            "error": "Location data is required. Please set a location for this parcel first.",
+            "parcel": parcel,
+        })
+
+    try:
+        climate_zone = get_koppen_zone(parcel.latitude, parcel.longitude)
+    except KoppenError as exc:
+        return render(request, "parcels/partials/analysis_error.html", {
+            "error": str(exc),
+            "parcel": parcel,
+        })
+
+    parcel.climate_zone = climate_zone
+    parcel.save()
+    return render(request, "parcels/partials/analysis_result.html", {"parcel": parcel})

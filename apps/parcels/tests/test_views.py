@@ -6,6 +6,7 @@ from django.test import Client
 
 from apps.parcels.models import Parcel
 from apps.parcels.services.geocoding import GeocodingError
+from apps.parcels.services.koppen import KoppenError
 
 SAMPLE_POLYGON = {
     "type": "Polygon",
@@ -321,3 +322,92 @@ def test_creating_multiple_parcels_for_same_user(user):
         "longitude": "2.36",
     })
     assert Parcel.objects.filter(user=user).count() == 2
+
+
+# --- Story 2.4: Parcel analyze view tests ---
+
+
+@pytest.mark.django_db
+def test_parcel_analyze_stores_climate_zone(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    with patch("apps.parcels.views.get_koppen_zone", return_value="Cfb - Oceanic"):
+        client.post(f"/parcels/{parcel.pk}/analyze/")
+    parcel.refresh_from_db()
+    assert parcel.climate_zone == "Cfb - Oceanic"
+
+
+@pytest.mark.django_db
+def test_parcel_analyze_returns_result_partial(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    with patch("apps.parcels.views.get_koppen_zone", return_value="Cfb - Oceanic"):
+        response = client.post(f"/parcels/{parcel.pk}/analyze/")
+    assert b"Cfb - Oceanic" in response.content
+
+
+@pytest.mark.django_db
+def test_parcel_analyze_returns_error_partial_when_no_location(user):
+    parcel = Parcel.objects.create(
+        user=user, name="No Location", polygon=SAMPLE_POLYGON, area_m2=100.0,
+    )
+    client = Client()
+    client.force_login(user)
+    response = client.post(f"/parcels/{parcel.pk}/analyze/")
+    assert b"Location data is required" in response.content
+
+
+@pytest.mark.django_db
+def test_parcel_analyze_returns_error_partial_on_koppen_error(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    with patch("apps.parcels.views.get_koppen_zone", side_effect=KoppenError("GeoTIFF missing")):
+        response = client.post(f"/parcels/{parcel.pk}/analyze/")
+    assert b"GeoTIFF missing" in response.content
+
+
+@pytest.mark.django_db
+def test_parcel_analyze_requires_login():
+    client = Client()
+    response = client.post("/parcels/1/analyze/")
+    assert response.status_code == 302 and "/users/login/" in response.url
+
+
+@pytest.mark.django_db
+def test_parcel_analyze_returns_404_for_other_users_parcel(user):
+    from django.contrib.auth import get_user_model
+    other_user = get_user_model().objects.create_user(
+        username="otheruser", email="other@example.com", password="SecurePass123!",
+    )
+    parcel = Parcel.objects.create(
+        user=other_user, name="Secret", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    response = client.post(f"/parcels/{parcel.pk}/analyze/")
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_parcel_analyze_rejects_get_request(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    response = client.get(f"/parcels/{parcel.pk}/analyze/")
+    assert response.status_code == 405

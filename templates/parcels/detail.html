@@ -21,6 +21,21 @@
         <div class="card-body">
           <p><span class="font-semibold">Area:</span> {{ parcel.area_m2|floatformat:0 }} m²</p>
           <p><span class="font-semibold">Created:</span> {{ parcel.created_at|date:"N j, Y" }}</p>
+          {% if parcel.climate_zone %}
+            <p><span class="font-semibold">Climate:</span> {{ parcel.climate_zone }}</p>
+          {% else %}
+            <div id="parcels-analysis-result">
+              <button class="btn btn-secondary btn-sm w-full"
+                      hx-post="{% url 'parcels:analyze' parcel.pk %}"
+                      hx-target="#parcels-analysis-result"
+                      hx-indicator="#parcels-analysis-loading">
+                Analyze Climate
+              </button>
+              <div id="parcels-analysis-loading" class="htmx-indicator text-center text-sm text-base-content/60">
+                Gathering climate data...
+              </div>
+            </div>
+          {% endif %}
         </div>
       </div>
       <div class="flex flex-col gap-2">

@@ -1,0 +1,12 @@
+<div class="alert alert-error">
+  <span>{{ error }}</span>
+  <button class="btn btn-sm btn-ghost"
+          hx-post="{% url 'parcels:analyze' parcel.pk %}"
+          hx-target="#parcels-analysis-result"
+          hx-indicator="#parcels-analysis-loading">
+    Retry
+  </button>
+</div>
+<div id="parcels-analysis-loading" class="htmx-indicator text-center text-sm text-base-content/60">
+  Gathering climate data...
+</div>
