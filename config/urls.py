@@ -8,4 +8,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("users/", include("apps.users.urls")),
     path("parcels/", include("apps.parcels.urls")),
+    path("trees/", include("apps.trees.urls")),
 ]

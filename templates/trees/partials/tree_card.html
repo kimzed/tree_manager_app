@@ -1,0 +1,18 @@
+{% if tree.image_url %}
+  <img src="{{ tree.image_url }}" alt="{{ tree.common_name }}" class="h-40 w-full object-cover">
+{% else %}
+  <div class="h-40 w-full bg-base-200 flex items-center justify-center">
+    <span class="text-base-content/30 text-4xl">🌳</span>
+  </div>
+{% endif %}
+<div class="card-body p-4">
+  <h4 class="card-title text-base">{{ tree.common_name }}</h4>
+  <p class="text-sm italic text-base-content/60">{{ tree.scientific_name }}</p>
+  {% if tree.attributes %}
+    <div class="flex flex-wrap gap-1 mt-2">
+      {% for attr in tree.attributes %}
+        <span class="badge badge-outline badge-sm">{{ attr }}</span>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>

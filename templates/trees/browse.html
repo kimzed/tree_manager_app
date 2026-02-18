@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Trees - Tree Manager{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Browse Trees</h1>
+
+<div class="flex flex-wrap gap-4 mb-8">
+  <select name="type" class="select select-bordered"
+          hx-get="{% url 'trees:filter' %}"
+          hx-target="#trees-browse-result"
+          hx-include="[name='type'],[name='size'],[name='maintenance']">
+    <option value="">All types</option>
+    <option value="fruit" {% if selected_type == "fruit" %}selected{% endif %}>Fruit</option>
+    <option value="ornamental" {% if selected_type == "ornamental" %}selected{% endif %}>Ornamental</option>
+    <option value="screening" {% if selected_type == "screening" %}selected{% endif %}>Screening</option>
+    <option value="shade" {% if selected_type == "shade" %}selected{% endif %}>Shade</option>
+    <option value="wildlife" {% if selected_type == "wildlife" %}selected{% endif %}>Wildlife</option>
+  </select>
+
+  <select name="size" class="select select-bordered"
+          hx-get="{% url 'trees:filter' %}"
+          hx-target="#trees-browse-result"
+          hx-include="[name='type'],[name='size'],[name='maintenance']">
+    <option value="">All sizes</option>
+    <option value="small" {% if selected_size == "small" %}selected{% endif %}>Small (&lt; 8m)</option>
+    <option value="medium" {% if selected_size == "medium" %}selected{% endif %}>Medium (8-15m)</option>
+    <option value="large" {% if selected_size == "large" %}selected{% endif %}>Large (&gt; 15m)</option>
+  </select>
+
+  <select name="maintenance" class="select select-bordered"
+          hx-get="{% url 'trees:filter' %}"
+          hx-target="#trees-browse-result"
+          hx-include="[name='type'],[name='size'],[name='maintenance']">
+    <option value="">All maintenance</option>
+    <option value="low" {% if selected_maintenance == "low" %}selected{% endif %}>Low</option>
+    <option value="medium" {% if selected_maintenance == "medium" %}selected{% endif %}>Medium</option>
+    <option value="high" {% if selected_maintenance == "high" %}selected{% endif %}>High</option>
+  </select>
+</div>
+
+<div id="trees-browse-result">
+  {% include "trees/partials/tree_list.html" %}
+</div>
+{% endblock %}

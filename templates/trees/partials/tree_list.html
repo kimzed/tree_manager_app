@@ -1,0 +1,17 @@
+<p class="text-sm text-base-content/70 mb-4">{{ count }} tree{{ count|pluralize }} found</p>
+{% if trees %}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for tree in trees %}
+      <div class="card bg-base-100 shadow-sm">
+        {% include "trees/partials/tree_card.html" %}
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="text-center py-12">
+    <p class="text-base-content/50 mb-4">No trees match your filters. Try adjusting your selection.</p>
+    <a href="{% url 'trees:browse' %}" class="btn btn-outline btn-sm">
+      Reset filters
+    </a>
+  </div>
+{% endif %}
