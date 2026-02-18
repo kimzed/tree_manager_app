@@ -53,6 +53,7 @@ development_status:
   2-4-koppen-climate-zone-analysis: done
   2-5-soilgrids-integration: done
   2-5b-macrostrat-geology-fallback: done
+  2-7-fix-parcel-polygon-redraw-reliability: in-progress
   2-6-unified-parcel-profile: backlog
   epic-2-retrospective: optional
 

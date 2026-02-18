@@ -52,17 +52,21 @@
   var drawnItems = new L.FeatureGroup();
   map.addLayer(drawnItems);
 
-  var drawControl = new L.Control.Draw({
-    draw: {
-      polygon: true,
-      polyline: false,
-      rectangle: false,
-      circle: false,
-      marker: false,
-      circlemarker: false,
-    },
-    edit: { featureGroup: drawnItems },
-  });
+  function createDrawControl() {
+    return new L.Control.Draw({
+      draw: {
+        polygon: true,
+        polyline: false,
+        rectangle: false,
+        circle: false,
+        marker: false,
+        circlemarker: false,
+      },
+      edit: { featureGroup: drawnItems },
+    });
+  }
+
+  var drawControl = createDrawControl();
   map.addControl(drawControl);
 
   function updatePolygonUI(layer) {
@@ -83,8 +87,12 @@
 
   map.on(L.Draw.Event.CREATED, function (event) {
     drawnItems.clearLayers();
+    map.removeControl(drawControl);
+    drawControl = createDrawControl();
+    map.addControl(drawControl);
     drawnItems.addLayer(event.layer);
-    document.getElementById("parcels-save-result").innerHTML = "";
+    var resultEl = document.getElementById("parcels-save-result") || document.getElementById("parcels-update-result");
+    if (resultEl) resultEl.innerHTML = "";
     updatePolygonUI(event.layer);
   });
 
@@ -100,6 +108,9 @@
 
   function clearPolygon() {
     drawnItems.clearLayers();
+    map.removeControl(drawControl);
+    drawControl = createDrawControl();
+    map.addControl(drawControl);
     document.getElementById("parcels-polygon").value = "";
     document.getElementById("parcels-area").value = "";
     document.getElementById("parcels-area-display").classList.add("hidden");
@@ -107,7 +118,8 @@
     document.getElementById("parcels-clear-btn").classList.add("hidden");
     var nameInput = document.getElementById("parcels-name-input");
     if (nameInput) nameInput.classList.add("hidden");
-    document.getElementById("parcels-save-result").innerHTML = "";
+    var resultEl = document.getElementById("parcels-save-result") || document.getElementById("parcels-update-result");
+    if (resultEl) resultEl.innerHTML = "";
   }
 
   // Section 4: Clear button click handler

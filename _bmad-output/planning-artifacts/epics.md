@@ -515,6 +515,41 @@ So that I still receive meaningful soil-aware recommendations instead of a dead 
 
 ---
 
+#### Story 2.7: Fix Parcel Polygon Redraw Reliability
+
+As a user,
+I want to redraw or modify my parcel polygon reliably on subsequent attempts,
+So that I can correct mistakes or update my garden boundary without encountering broken map behavior.
+
+**Acceptance Criteria:**
+
+**Given** I have a saved parcel with an existing polygon
+**When** I click "Clear & Redraw" on the edit page
+**Then** the existing polygon is removed from the map
+**And** the draw tool is fully functional for creating a new polygon
+**And** I can save the new polygon successfully
+
+**Given** I have just saved a new parcel
+**When** I navigate to edit that parcel
+**Then** my existing polygon is displayed and editable
+**And** I can modify vertices and save changes
+
+**Given** I am on the edit page and clear the polygon
+**When** I draw a new polygon and save
+**And** then clear and draw again
+**Then** the draw tool works correctly on every subsequent attempt (not just the first redraw)
+
+**Given** I am on the create page
+**When** I draw a polygon, clear it, and draw again
+**Then** the second polygon draws and saves correctly
+
+**Technical scope:** Root cause is likely leaflet-draw's edit toolbar holding stale references after `drawnItems.clearLayers()`. Investigation and fix in `static/js/map.js`. Possible approaches: reinitialize the draw control after clear, or use leaflet-draw's API to properly remove layers instead of bulk-clearing. No backend changes expected.
+
+**Files likely affected:**
+- `static/js/map.js` — draw control state management on clear/redraw
+
+---
+
 #### Story 2.6: Unified Parcel Profile
 
 As a user,
