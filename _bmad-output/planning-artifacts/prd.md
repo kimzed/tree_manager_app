@@ -193,7 +193,7 @@ Tree Manager App is an intelligent tree planning tool that gives aspiring orchar
 | Data pipeline (ETL from raw datasets → 200 species) | Blocks everything | Build data pipeline first before UI work |
 | LLM recommendation quality | Core product value | Test with sample user profiles directly in the built app; iterate prompts in-place |
 | GeoTIFF/rasterio (first-time geospatial) | Could delay launch | Isolated component - can debug independently |
-| SoilGrids API down | User can't complete flow | Show clear error, ask to retry later. No fallback complexity. |
+| SoilGrids API down or no data (urban areas) | User gets degraded or no soil analysis | Fallback to Macrostrat geology inference (lithology → approximate pH/drainage). Error with retry/skip only if both sources fail. |
 | Solo dev scope creep | Never ships | Scope is locked at 12 features. Resist additions until MVP ships. |
 
 ## Functional Requirements
@@ -210,8 +210,8 @@ Tree Manager App is an intelligent tree planning tool that gives aspiring orchar
 ### Environmental Analysis
 
 - **FR7:** System determines the Köppen climate zone for a given parcel location via GeoTIFF lookup
-- **FR8:** System retrieves soil pH and drainage data for a given parcel location via SoilGrids API
-- **FR9:** System displays a clear error message when SoilGrids is unavailable, prompting the user to retry later
+- **FR8:** System retrieves soil pH and drainage data for a given parcel location via SoilGrids API, falling back to Macrostrat geology inference when SoilGrids returns no data (e.g., urban areas)
+- **FR9:** System displays a clear error message when soil data is unavailable from all sources (SoilGrids and Macrostrat), prompting the user to retry or skip
 - **FR10:** System combines climate, soil, and parcel size into a unified location profile used for recommendations
 
 ### Tree Database & Discovery

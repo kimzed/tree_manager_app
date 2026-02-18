@@ -419,7 +419,10 @@ flowchart TD
     E3 --> E4[SoilGrids API Call]
     E4 --> E5{Soil Data OK?}
     E5 -->|Yes| F[Combine Profile + Conditions + Tree DB]
-    E5 -->|Fail| E6[Show Error + Retry/Skip]
+    E5 -->|No data| E5b[Macrostrat Geology Inference]
+    E5b --> E5c{Lithology Found?}
+    E5c -->|Yes| F
+    E5c -->|Fail| E6[Show Error + Retry/Skip]
     E6 -->|Retry| E4
     E6 -->|Skip| F
     F --> F1["⏳ Finding your perfect trees..."]
@@ -519,7 +522,9 @@ flowchart TD
 flowchart TD
     A[Analysis Phase] --> B{SoilGrids API}
     B -->|Success| C[Soil Data Available]
-    B -->|Timeout/Error| D["'We couldn't reach our soil data source right now.'"]
+    B -->|No data/Error| B2[Macrostrat Geology Fallback]
+    B2 -->|Lithology found| C2[Soil Data Inferred from Geology]
+    B2 -->|Fail| D["'We couldn't determine soil conditions for this location.'"]
     D --> E{User Choice}
     E -->|Retry| B
     E -->|Skip for Now| F[Proceed with Climate Only]
@@ -662,6 +667,7 @@ flowchart TD
 - Section title ("Your Garden Profile")
 - Data rows: Climate Zone, Soil pH, Drainage, Parcel Size
 - Each row: label (muted) + value (bold)
+- Source indicator on soil rows: "Measured" (SoilGrids) or "Inferred from geology" (Macrostrat) — displayed as a subtle info badge
 - Caveat text if soil data was skipped
 
 **States:**

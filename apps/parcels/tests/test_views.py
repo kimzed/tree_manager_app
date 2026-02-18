@@ -1,12 +1,14 @@
 import json
 
 import pytest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from django.test import Client
 
 from apps.parcels.models import Parcel
 from apps.parcels.services.geocoding import GeocodingError
 from apps.parcels.services.koppen import KoppenError
+from apps.parcels.services.macrostrat import MacrostratError
+from apps.parcels.services.soilgrids import SoilGridsError
 
 SAMPLE_POLYGON = {
     "type": "Polygon",
@@ -411,3 +413,175 @@ def test_parcel_analyze_rejects_get_request(user):
     client.force_login(user)
     response = client.get(f"/parcels/{parcel.pk}/analyze/")
     assert response.status_code == 405
+
+
+# --- Story 2.5: Soil analyze view tests ---
+
+
+@pytest.mark.django_db
+def test_soil_analyze_stores_soil_ph_on_parcel(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    mock_soil = MagicMock(ph=6.5, drainage="Moderately drained", approximate=False)
+    with patch("apps.parcels.views.get_soil_data", return_value=mock_soil):
+        client.post(f"/parcels/{parcel.pk}/soil-analyze/")
+    parcel.refresh_from_db()
+    assert parcel.soil_ph == 6.5
+
+
+@pytest.mark.django_db
+def test_soil_analyze_stores_soil_drainage_on_parcel(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    mock_soil = MagicMock(ph=6.5, drainage="Moderately drained", approximate=False)
+    with patch("apps.parcels.views.get_soil_data", return_value=mock_soil):
+        client.post(f"/parcels/{parcel.pk}/soil-analyze/")
+    parcel.refresh_from_db()
+    assert parcel.soil_drainage == "Moderately drained"
+
+
+@pytest.mark.django_db
+def test_soil_analyze_returns_result_partial(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    mock_soil = MagicMock(ph=6.5, drainage="Moderately drained", approximate=False)
+    with patch("apps.parcels.views.get_soil_data", return_value=mock_soil):
+        response = client.post(f"/parcels/{parcel.pk}/soil-analyze/")
+    assert b"Moderately drained" in response.content
+
+
+@pytest.mark.django_db
+def test_soil_analyze_returns_error_partial_when_no_location(user):
+    parcel = Parcel.objects.create(
+        user=user, name="No Location", polygon=SAMPLE_POLYGON, area_m2=100.0,
+    )
+    client = Client()
+    client.force_login(user)
+    response = client.post(f"/parcels/{parcel.pk}/soil-analyze/")
+    assert b"Location data is required" in response.content
+
+
+@pytest.mark.django_db
+def test_soil_analyze_requires_login():
+    client = Client()
+    response = client.post("/parcels/1/soil-analyze/")
+    assert response.status_code == 302 and "/users/login/" in response.url
+
+
+@pytest.mark.django_db
+def test_soil_analyze_returns_404_for_other_users_parcel(user):
+    from django.contrib.auth import get_user_model
+    other_user = get_user_model().objects.create_user(
+        username="otheruser", email="other@example.com", password="SecurePass123!",
+    )
+    parcel = Parcel.objects.create(
+        user=other_user, name="Secret", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    response = client.post(f"/parcels/{parcel.pk}/soil-analyze/")
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_soil_analyze_rejects_get_request(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    response = client.get(f"/parcels/{parcel.pk}/soil-analyze/")
+    assert response.status_code == 405
+
+
+# --- Story 2.5: Soil skip view tests ---
+
+
+@pytest.mark.django_db
+def test_soil_skip_returns_caveat_partial(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    response = client.post(f"/parcels/{parcel.pk}/soil-skip/")
+    assert b"Soil data unavailable" in response.content
+
+
+# --- Story 2.5b: Macrostrat fallback view tests ---
+
+
+@pytest.mark.django_db
+def test_soil_analyze_sets_source_measured_when_soilgrids_succeeds(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    mock_soil = MagicMock(ph=6.5, drainage="Moderately drained", approximate=False)
+    with patch("apps.parcels.views.get_soil_data", return_value=mock_soil):
+        client.post(f"/parcels/{parcel.pk}/soil-analyze/")
+    parcel.refresh_from_db()
+    assert parcel.soil_source == "measured"
+
+
+@pytest.mark.django_db
+def test_soil_analyze_falls_back_to_macrostrat_when_soilgrids_fails(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    mock_soil = MagicMock(ph=7.5, drainage="Well-drained", approximate=True)
+    with patch("apps.parcels.views.get_soil_data", side_effect=SoilGridsError("no data")), \
+         patch("apps.parcels.views.get_geology_soil_data", return_value=mock_soil):
+        client.post(f"/parcels/{parcel.pk}/soil-analyze/")
+    parcel.refresh_from_db()
+    assert parcel.soil_ph == 7.5
+
+
+@pytest.mark.django_db
+def test_soil_analyze_sets_source_inferred_on_macrostrat_success(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    mock_soil = MagicMock(ph=7.5, drainage="Well-drained", approximate=True)
+    with patch("apps.parcels.views.get_soil_data", side_effect=SoilGridsError("no data")), \
+         patch("apps.parcels.views.get_geology_soil_data", return_value=mock_soil):
+        client.post(f"/parcels/{parcel.pk}/soil-analyze/")
+    parcel.refresh_from_db()
+    assert parcel.soil_source == "inferred"
+
+
+@pytest.mark.django_db
+def test_soil_analyze_returns_error_partial_when_both_sources_fail(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    with patch("apps.parcels.views.get_soil_data", side_effect=SoilGridsError("no data")), \
+         patch("apps.parcels.views.get_geology_soil_data", side_effect=MacrostratError("API down")):
+        response = client.post(f"/parcels/{parcel.pk}/soil-analyze/")
+    assert b"We couldn&#x27;t reach our soil data source" in response.content

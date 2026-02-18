@@ -489,6 +489,32 @@ So that I receive tree recommendations suited to my soil type.
 
 ---
 
+#### Story 2.5b: Macrostrat Geology Fallback for Soil Data
+
+As a user with a parcel in an urban area,
+I want soil conditions inferred from the underlying geology when SoilGrids has no data,
+So that I still receive meaningful soil-aware recommendations instead of a dead end.
+
+**Acceptance Criteria:**
+
+**Given** SoilGrids returns no data for my parcel location (including nearby offsets)
+**When** the fallback is triggered
+**Then** the system queries Macrostrat API for the lithology at my coordinates
+**And** infers approximate pH and drainage from a lithology lookup table
+
+**Given** Macrostrat returns lithology data
+**When** soil properties are inferred
+**Then** soil data is stored on my parcel with a source indicator ("inferred")
+**And** the UI shows the data is geology-inferred, not directly measured
+
+**Given** both SoilGrids and Macrostrat fail
+**When** neither source returns usable data
+**Then** I see the existing error partial with Retry/Skip options
+
+**Technical scope:** `apps/parcels/services/macrostrat.py` (Macrostrat API client + lithology lookup table), modify `parcel_soil_analyze` view to chain SoilGrids → Macrostrat → Error, add `soil_source` field to Parcel model, update `soil_result.html` to show source indicator.
+
+---
+
 #### Story 2.6: Unified Parcel Profile
 
 As a user,

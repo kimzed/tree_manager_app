@@ -1,0 +1,19 @@
+<div class="alert alert-error">
+  <span>{{ error }}</span>
+  <div class="flex gap-2">
+    <button class="btn btn-sm btn-ghost"
+            hx-post="{% url 'parcels:soil-analyze' parcel.pk %}"
+            hx-target="#parcels-soil-result"
+            hx-indicator="#parcels-soil-loading">
+      Retry
+    </button>
+    <button class="btn btn-sm btn-ghost"
+            hx-post="{% url 'parcels:soil-skip' parcel.pk %}"
+            hx-target="#parcels-soil-result">
+      Skip for now
+    </button>
+  </div>
+</div>
+<div id="parcels-soil-loading" class="htmx-indicator text-center text-sm text-base-content/60">
+  Analyzing soil conditions...
+</div>

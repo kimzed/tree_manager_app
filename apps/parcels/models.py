@@ -16,6 +16,9 @@ class Parcel(models.Model):
     polygon = models.JSONField(null=True, blank=True)
     area_m2 = models.FloatField(null=True, blank=True)
     climate_zone = models.CharField(max_length=100, blank=True)
+    soil_ph = models.FloatField(null=True, blank=True)
+    soil_drainage = models.CharField(max_length=50, blank=True)
+    soil_source = models.CharField(max_length=20, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -12,6 +12,8 @@ from django.shortcuts import get_object_or_404, render
 from apps.parcels.models import Parcel
 from apps.parcels.services.geocoding import GeocodingError, geocode_address
 from apps.parcels.services.koppen import KoppenError, get_koppen_zone
+from apps.parcels.services.macrostrat import MacrostratError, get_geology_soil_data
+from apps.parcels.services.soilgrids import SoilGridsError, get_soil_data
 from apps.users.models import CustomUser
 
 
@@ -168,3 +170,45 @@ def parcel_analyze(request: HttpRequest, pk: int) -> HttpResponse:
     parcel.climate_zone = climate_zone
     parcel.save()
     return render(request, "parcels/partials/analysis_result.html", {"parcel": parcel})
+
+
+@require_POST
+@login_required
+def parcel_soil_analyze(request: HttpRequest, pk: int) -> HttpResponse:
+    parcel = get_object_or_404(Parcel, pk=pk, user=request.user)
+
+    if parcel.latitude is None or parcel.longitude is None:
+        return render(request, "parcels/partials/soil_error.html", {
+            "error": "Location data is required. Please set a location for this parcel first.",
+            "parcel": parcel,
+        })
+
+    try:
+        soil_data = get_soil_data(parcel.latitude, parcel.longitude)
+        source = "measured"
+    except SoilGridsError:
+        try:
+            soil_data = get_geology_soil_data(parcel.latitude, parcel.longitude)
+            source = "inferred"
+        except MacrostratError:
+            return render(request, "parcels/partials/soil_error.html", {
+                "error": "We couldn't reach our soil data source.",
+                "parcel": parcel,
+            })
+
+    parcel.soil_ph = soil_data.ph
+    parcel.soil_drainage = soil_data.drainage
+    parcel.soil_source = source
+    parcel.save()
+    return render(request, "parcels/partials/soil_result.html", {
+        "parcel": parcel,
+        "approximate": soil_data.approximate,
+        "source": source,
+    })
+
+
+@require_POST
+@login_required
+def parcel_soil_skip(request: HttpRequest, pk: int) -> HttpResponse:
+    get_object_or_404(Parcel, pk=pk, user=request.user)
+    return render(request, "parcels/partials/soil_skipped.html")

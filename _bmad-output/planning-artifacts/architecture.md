@@ -659,6 +659,7 @@ tree_manager/
 │   │   │   ├── __init__.py
 │   │   │   ├── koppen.py           # Köppen GeoTIFF lookup (lazy singleton)
 │   │   │   ├── soilgrids.py        # SoilGrids API client
+│   │   │   ├── macrostrat.py       # Macrostrat geology inference (SoilGrids fallback)
 │   │   │   ├── geocoding.py        # Nominatim geocoding
 │   │   │   └── analysis.py         # Combines services → ParcelProfile
 │   │   └── tests/
@@ -799,6 +800,7 @@ tree_manager/
 |---------|----------|---------------------|
 | Köppen lookup | `apps/parcels/services/koppen.py` | Local GeoTIFF file |
 | SoilGrids client | `apps/parcels/services/soilgrids.py` | SoilGrids REST API |
+| Macrostrat client | `apps/parcels/services/macrostrat.py` | Macrostrat API (geology inference fallback) |
 | Geocoding | `apps/parcels/services/geocoding.py` | Nominatim API |
 | LLM client | `apps/recommendations/services/llm.py` | Anthropic Claude API |
 
@@ -826,12 +828,13 @@ templates/parcels/partials/map.html → Map partial
 
 **FR7-10 (Environmental Analysis):**
 ```
-apps/parcels/services/koppen.py    → Köppen GeoTIFF lookup
-apps/parcels/services/soilgrids.py → SoilGrids API client
-apps/parcels/services/analysis.py  → Combine into ParcelProfile
-apps/parcels/views.py              → analyze endpoint (HTMX)
+apps/parcels/services/koppen.py     → Köppen GeoTIFF lookup
+apps/parcels/services/soilgrids.py  → SoilGrids API client
+apps/parcels/services/macrostrat.py → Macrostrat geology inference (SoilGrids fallback)
+apps/parcels/services/analysis.py   → Combine services → ParcelProfile
+apps/parcels/views.py               → analyze endpoint (HTMX)
 templates/parcels/partials/analysis.html → Results display
-templates/parcels/partials/soil_error.html → Error with retry/skip
+templates/parcels/partials/soil_error.html → Error with retry/skip (after both sources fail)
 ```
 
 **FR11-15 (Tree Database & Discovery):**
@@ -885,7 +888,8 @@ templates/users/login.html, register.html, profile.html
 | Integration | Entry Point | Error Handling |
 |-------------|-------------|----------------|
 | Nominatim | `parcels/services/geocoding.py` | Return None, UI shows "location not found" |
-| SoilGrids | `parcels/services/soilgrids.py` | Raise `SoilGridsError`, view offers retry/skip |
+| SoilGrids | `parcels/services/soilgrids.py` | Raise `SoilGridsError`, triggers Macrostrat fallback |
+| Macrostrat | `parcels/services/macrostrat.py` | Raise `MacrostratError`, view offers retry/skip only if both fail |
 | Anthropic Claude | `recommendations/services/llm.py` | Raise `RecommendationError`, view offers retry |
 | ESRI Tiles | `static/js/map.js` (client-side) | Leaflet handles gracefully |
 
