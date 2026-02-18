@@ -132,30 +132,6 @@ SPECIES_DEFAULTS: dict[str, dict[str, object]] = {
     "Cryptomeria japonica": {"common_name": "Japanese Cedar", "soil_ph_min": 5.0, "soil_ph_max": 6.5, "drought_tolerant": False, "primary_use": "screening", "max_height_m": 40.0, "maintenance_level": "low", "attributes": ["Evergreen"]},
 }
 
-WIKIMEDIA_BASE = "https://commons.wikimedia.org/wiki/Special:FilePath"
-
-# Wikimedia Commons image filenames for species
-IMAGE_FILES: dict[str, str] = {
-    "Quercus robur": "Quercus_robur_JPG_(d1).jpg",
-    "Fagus sylvatica": "Fagus_sylvatica_JPG1a.jpg",
-    "Betula pendula": "Betula_pendula_001.jpg",
-    "Pinus sylvestris": "Pinus_sylvestris_Aland.jpg",
-    "Picea abies": "Picea_abies.jpg",
-    "Prunus avium": "Prunus_avium_fruit.jpg",
-    "Olea europaea": "Olea_europaea_subsp._europaea_(wild).jpg",
-    "Castanea sativa": "Castanea_sativa_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-172.jpg",
-    "Acer pseudoplatanus": "Acer_pseudoplatanus_004.jpg",
-    "Tilia cordata": "Tilia_cordata_015.jpg",
-}
-
-
-def get_image_url(scientific_name: str) -> str:
-    """Get Wikimedia Commons image URL for a species."""
-    filename = IMAGE_FILES.get(scientific_name, "")
-    if filename:
-        return f"{WIKIMEDIA_BASE}/{filename}"
-    return ""
-
 
 def merge_layers(
     eu_forest_data: list[dict[str, object]],
@@ -192,7 +168,7 @@ def merge_layers(
             "primary_use": defaults.get("primary_use", "ornamental"),
             "max_height_m": defaults.get("max_height_m", 15.0),
             "maintenance_level": defaults.get("maintenance_level", "medium"),
-            "image_url": get_image_url(sci_name),
+            "image_url": "",
             "attributes": defaults.get("attributes", []),
         }
 
@@ -223,7 +199,7 @@ def merge_layers(
             "primary_use": defaults.get("primary_use", "ornamental"),
             "max_height_m": defaults.get("max_height_m", 15.0),
             "maintenance_level": defaults.get("maintenance_level", "medium"),
-            "image_url": get_image_url(sci_name),
+            "image_url": "",
             "attributes": defaults.get("attributes", []),
         }
         unified.append(species_record)
@@ -269,6 +245,9 @@ def build_tree_database(
         eu_trees4f_data = process_eu_trees4f(eu_trees4f_csv)
 
     unified = merge_layers(eu_forest_data, med_db_data, eu_trees4f_data)
+
+    from scripts.etl.fetch_images import fetch_species_images
+    unified = fetch_species_images(unified)
 
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     output_path = PROCESSED_DIR / "tree_species.json"
