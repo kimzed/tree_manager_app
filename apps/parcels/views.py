@@ -209,6 +209,44 @@ def parcel_soil_analyze(request: HttpRequest, pk: int) -> HttpResponse:
 
 @require_POST
 @login_required
+def parcel_full_analyze(request: HttpRequest, pk: int) -> HttpResponse:
+    parcel = get_object_or_404(Parcel, pk=pk, user=request.user)
+
+    if parcel.latitude is None or parcel.longitude is None:
+        return render(request, "parcels/partials/analysis_error.html", {
+            "error": "Location data is required.",
+            "parcel": parcel,
+        })
+
+    try:
+        climate_zone = get_koppen_zone(parcel.latitude, parcel.longitude)
+        parcel.climate_zone = climate_zone
+    except KoppenError:
+        return render(request, "parcels/partials/analysis_error.html", {
+            "error": "Could not determine climate zone for this location.",
+            "parcel": parcel,
+        })
+
+    try:
+        soil_data = get_soil_data(parcel.latitude, parcel.longitude)
+        parcel.soil_ph = soil_data.ph
+        parcel.soil_drainage = soil_data.drainage
+        parcel.soil_source = "measured"
+    except SoilGridsError:
+        try:
+            soil_data = get_geology_soil_data(parcel.latitude, parcel.longitude)
+            parcel.soil_ph = soil_data.ph
+            parcel.soil_drainage = soil_data.drainage
+            parcel.soil_source = "inferred"
+        except MacrostratError:
+            pass
+
+    parcel.save()
+    return render(request, "parcels/partials/profile.html", {"parcel": parcel})
+
+
+@require_POST
+@login_required
 def parcel_soil_skip(request: HttpRequest, pk: int) -> HttpResponse:
     get_object_or_404(Parcel, pk=pk, user=request.user)
     return render(request, "parcels/partials/soil_skipped.html")

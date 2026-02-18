@@ -17,45 +17,25 @@
            data-view-only="true"></div>
     </div>
     <div class="space-y-4">
-      <div class="card bg-base-200">
-        <div class="card-body">
-          <p><span class="font-semibold">Area:</span> {{ parcel.area_m2|floatformat:0 }} m²</p>
-          <p><span class="font-semibold">Created:</span> {{ parcel.created_at|date:"N j, Y" }}</p>
-          {% if parcel.climate_zone %}
-            <p><span class="font-semibold">Climate:</span> {{ parcel.climate_zone }}</p>
-          {% else %}
-            <div id="parcels-analysis-result">
-              <button class="btn btn-secondary btn-sm w-full"
-                      hx-post="{% url 'parcels:analyze' parcel.pk %}"
-                      hx-target="#parcels-analysis-result"
-                      hx-indicator="#parcels-analysis-loading">
-                Analyze Climate
+      <div id="parcels-profile-section">
+        {% if parcel.climate_zone or parcel.soil_ph is not None %}
+          {% include "parcels/partials/profile.html" with parcel=parcel %}
+        {% else %}
+          <div class="card bg-base-200">
+            <div class="card-body text-center">
+              <p class="text-sm text-base-content/60 mb-3">Analyze your garden's conditions</p>
+              <button class="btn btn-primary btn-sm w-full"
+                      hx-post="{% url 'parcels:full-analyze' parcel.pk %}"
+                      hx-target="#parcels-profile-section"
+                      hx-indicator="#parcels-profile-loading">
+                Analyze My Garden
               </button>
-              <div id="parcels-analysis-loading" class="htmx-indicator text-center text-sm text-base-content/60">
-                Gathering climate data...
+              <div id="parcels-profile-loading" class="htmx-indicator text-center text-sm text-base-content/60 mt-2">
+                Analyzing your garden...
               </div>
             </div>
-          {% endif %}
-          {% if parcel.soil_ph is not None %}
-            <p><span class="font-semibold">Soil pH:</span> {{ parcel.soil_ph }}</p>
-            <p><span class="font-semibold">Drainage:</span> {{ parcel.soil_drainage }}</p>
-            {% if parcel.soil_source == "inferred" %}
-              <p class="text-xs text-warning">Estimated from geology</p>
-            {% endif %}
-          {% else %}
-            <div id="parcels-soil-result">
-              <button class="btn btn-secondary btn-sm w-full"
-                      hx-post="{% url 'parcels:soil-analyze' parcel.pk %}"
-                      hx-target="#parcels-soil-result"
-                      hx-indicator="#parcels-soil-loading">
-                Analyze Soil
-              </button>
-              <div id="parcels-soil-loading" class="htmx-indicator text-center text-sm text-base-content/60">
-                Analyzing soil conditions...
-              </div>
-            </div>
-          {% endif %}
-        </div>
+          </div>
+        {% endif %}
       </div>
       <div class="flex flex-col gap-2">
         <a href="{% url 'parcels:edit' parcel.pk %}" class="btn btn-primary">Edit parcel</a>

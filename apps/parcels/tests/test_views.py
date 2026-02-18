@@ -585,3 +585,128 @@ def test_soil_analyze_returns_error_partial_when_both_sources_fail(user):
          patch("apps.parcels.views.get_geology_soil_data", side_effect=MacrostratError("API down")):
         response = client.post(f"/parcels/{parcel.pk}/soil-analyze/")
     assert b"We couldn&#x27;t reach our soil data source" in response.content
+
+
+# --- Story 2.6: Full analyze view tests ---
+
+
+@pytest.mark.django_db
+def test_full_analyze_requires_login():
+    client = Client()
+    response = client.post("/parcels/1/full-analyze/")
+    assert response.status_code == 302 and "/users/login/" in response.url
+
+
+@pytest.mark.django_db
+def test_full_analyze_returns_404_for_other_users_parcel(user):
+    from django.contrib.auth import get_user_model
+    other_user = get_user_model().objects.create_user(
+        username="otheruser", email="other@example.com", password="SecurePass123!",
+    )
+    parcel = Parcel.objects.create(
+        user=other_user, name="Secret", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    response = client.post(f"/parcels/{parcel.pk}/full-analyze/")
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_full_analyze_rejects_get_request(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    response = client.get(f"/parcels/{parcel.pk}/full-analyze/")
+    assert response.status_code == 405
+
+
+@pytest.mark.django_db
+def test_full_analyze_returns_error_partial_when_no_location(user):
+    parcel = Parcel.objects.create(
+        user=user, name="No Location", polygon=SAMPLE_POLYGON, area_m2=100.0,
+    )
+    client = Client()
+    client.force_login(user)
+    response = client.post(f"/parcels/{parcel.pk}/full-analyze/")
+    assert b"Location data is required" in response.content
+
+
+@pytest.mark.django_db
+def test_full_analyze_returns_profile_partial_on_success(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    mock_soil = MagicMock(ph=6.5, drainage="Well-drained", approximate=False)
+    with patch("apps.parcels.views.get_koppen_zone", return_value="Cfb - Oceanic"), \
+         patch("apps.parcels.views.get_soil_data", return_value=mock_soil):
+        response = client.post(f"/parcels/{parcel.pk}/full-analyze/")
+    assert b"Your Garden Profile" in response.content
+
+
+@pytest.mark.django_db
+def test_full_analyze_returns_profile_with_soil_caveat_when_both_soil_sources_fail(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    with patch("apps.parcels.views.get_koppen_zone", return_value="Cfb - Oceanic"), \
+         patch("apps.parcels.views.get_soil_data", side_effect=SoilGridsError("no data")), \
+         patch("apps.parcels.views.get_geology_soil_data", side_effect=MacrostratError("API down")):
+        response = client.post(f"/parcels/{parcel.pk}/full-analyze/")
+    assert b"Soil data unavailable" in response.content
+
+
+@pytest.mark.django_db
+def test_full_analyze_returns_error_partial_when_koppen_fails(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    with patch("apps.parcels.views.get_koppen_zone", side_effect=KoppenError("GeoTIFF missing")):
+        response = client.post(f"/parcels/{parcel.pk}/full-analyze/")
+    assert b"Could not determine climate zone" in response.content
+
+
+@pytest.mark.django_db
+def test_full_analyze_sets_soil_source_measured_on_soilgrids_success(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    mock_soil = MagicMock(ph=6.5, drainage="Well-drained", approximate=False)
+    with patch("apps.parcels.views.get_koppen_zone", return_value="Cfb - Oceanic"), \
+         patch("apps.parcels.views.get_soil_data", return_value=mock_soil):
+        client.post(f"/parcels/{parcel.pk}/full-analyze/")
+    parcel.refresh_from_db()
+    assert parcel.soil_source == "measured"
+
+
+@pytest.mark.django_db
+def test_full_analyze_sets_soil_source_inferred_on_macrostrat_fallback(user):
+    parcel = Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=100.0,
+        latitude=48.85, longitude=2.35,
+    )
+    client = Client()
+    client.force_login(user)
+    mock_soil = MagicMock(ph=7.5, drainage="Well-drained", approximate=True)
+    with patch("apps.parcels.views.get_koppen_zone", return_value="Cfb - Oceanic"), \
+         patch("apps.parcels.views.get_soil_data", side_effect=SoilGridsError("no data")), \
+         patch("apps.parcels.views.get_geology_soil_data", return_value=mock_soil):
+        client.post(f"/parcels/{parcel.pk}/full-analyze/")
+    parcel.refresh_from_db()
+    assert parcel.soil_source == "inferred"

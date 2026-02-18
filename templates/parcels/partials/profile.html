@@ -1,0 +1,42 @@
+<div class="card bg-base-200">
+  <div class="card-body">
+    <h3 class="card-title text-sm">Your Garden Profile</h3>
+
+    <div class="space-y-2 text-sm">
+      {% if parcel.area_m2 %}
+        <p><span class="text-base-content/60">Area:</span> <span class="font-semibold">{{ parcel.area_m2|floatformat:0 }} m²</span></p>
+      {% endif %}
+
+      {% if parcel.climate_zone %}
+        <p><span class="text-base-content/60">Climate:</span> <span class="font-semibold">{{ parcel.climate_zone }}</span></p>
+      {% endif %}
+
+      {% if parcel.soil_ph is not None %}
+        <p><span class="text-base-content/60">Soil pH:</span> <span class="font-semibold">{{ parcel.soil_ph }}</span></p>
+        <p><span class="text-base-content/60">Drainage:</span> <span class="font-semibold">{{ parcel.soil_drainage }}</span></p>
+        {% if parcel.soil_source == "inferred" %}
+          <span class="badge badge-warning badge-sm">Estimated from geology</span>
+        {% else %}
+          <span class="badge badge-success badge-sm">Measured</span>
+        {% endif %}
+      {% elif parcel.has_partial_profile %}
+        <p class="text-warning text-xs">Soil data unavailable — recommendations will use climate data only.</p>
+        <button class="btn btn-secondary btn-xs"
+                hx-post="{% url 'parcels:full-analyze' parcel.pk %}"
+                hx-target="#parcels-profile-section"
+                hx-indicator="#parcels-soil-retry-loading">
+          Retry Soil Analysis
+        </button>
+        <span id="parcels-soil-retry-loading" class="htmx-indicator loading loading-dots loading-xs"></span>
+      {% endif %}
+    </div>
+
+    {% if parcel.has_complete_profile %}
+      <div class="divider my-1"></div>
+      <div class="bg-success/10 rounded-lg px-3 py-2 text-center">
+        <p class="font-semibold text-success text-sm">Profile complete</p>
+        <p class="text-xs text-base-content/60">Ready for recommendations</p>
+      </div>
+    {% endif %}
+  </div>
+</div>

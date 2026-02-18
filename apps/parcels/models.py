@@ -22,5 +22,13 @@ class Parcel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def has_complete_profile(self) -> bool:
+        return bool(self.climate_zone) and self.soil_ph is not None and bool(self.soil_drainage)
+
+    @property
+    def has_partial_profile(self) -> bool:
+        return bool(self.climate_zone) and self.soil_ph is None
+
     def __str__(self) -> str:
         return self.name or f"Parcel {self.pk}"
