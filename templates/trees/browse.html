@@ -39,6 +39,14 @@
   </select>
 </div>
 
+{% if active_parcel %}
+<div id="trees-mood-sets-result"
+     hx-get="{% url 'trees:mood_sets' active_parcel.pk %}"
+     hx-trigger="load"
+     hx-swap="outerHTML">
+</div>
+{% endif %}
+
 <div id="trees-browse-result">
   {% include "trees/partials/tree_list.html" %}
 </div>

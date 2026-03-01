@@ -1,6 +1,6 @@
 # Story 3.4: Mood Set Display with Parcel Filtering
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -20,37 +20,37 @@ so that I only see mood options with trees that will work on my land.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create mood set filtering service function (AC: 1, 2)
-  - [ ] 1.1 Add `get_compatible_mood_sets(parcel)` to `apps/trees/services.py` — for each `MoodSet`, query `TreeSpecies` filtered by `scientific_name__in` + `koppen_zones__contains` + soil pH range, return list of `(MoodSet, count)` tuples
-  - [ ] 1.2 Handle partial parcel profiles (climate only, no soil) — filter by climate only when `soil_ph` is `None`
+- [x] Task 1: Create mood set filtering service function (AC: 1, 2)
+  - [x] 1.1 Add `get_compatible_mood_sets(parcel)` to `apps/trees/services.py` — for each `MoodSet`, query `TreeSpecies` filtered by `scientific_name__in` + `koppen_zones__contains` + soil pH range, return list of `(MoodSet, count)` tuples
+  - [x] 1.2 Handle partial parcel profiles (climate only, no soil) — filter by climate only when `soil_ph` is `None`
 
-- [ ] Task 2: Create mood set views (AC: 1, 3)
-  - [ ] 2.1 Add `mood_sets_for_parcel` view — accepts `parcel_id`, calls service, renders `trees/partials/mood_sets.html`
-  - [ ] 2.2 Add `mood_set_trees` view — accepts `parcel_id` and `mood_key`, queries compatible trees for that mood+parcel, renders `trees/partials/tree_list.html` with mood context
+- [x] Task 2: Create mood set views (AC: 1, 3)
+  - [x] 2.1 Add `mood_sets_for_parcel` view — accepts `parcel_id`, calls service, renders `trees/partials/mood_sets.html`
+  - [x] 2.2 Add `mood_set_trees` view — accepts `parcel_id` and `mood_key`, queries compatible trees for that mood+parcel, renders `trees/partials/tree_list.html` with mood context
 
-- [ ] Task 3: Create mood set card template (AC: 4)
-  - [ ] 3.1 Create `templates/trees/partials/mood_card.html` — emoji (40px centered), title, description, match count badge
-  - [ ] 3.2 Create `templates/trees/partials/mood_sets.html` — grid of mood cards with "Or explore by vibe:" heading, uses `hx-get` to load mood-filtered trees
+- [x] Task 3: Create mood set card template (AC: 4)
+  - [x] 3.1 Create `templates/trees/partials/mood_card.html` — emoji (40px centered), title, description, match count badge
+  - [x] 3.2 Create `templates/trees/partials/mood_sets.html` — grid of mood cards with "Or explore by vibe:" heading, uses `hx-get` to load mood-filtered trees
 
-- [ ] Task 4: Integrate mood sets into tree browsing page (AC: 1, 4)
-  - [ ] 4.1 Update `templates/trees/browse.html` — add mood sets section above or below the filter bar, loaded via HTMX from parcel context
-  - [ ] 4.2 Add parcel selector or auto-detect active parcel in browse view context
+- [x] Task 4: Integrate mood sets into tree browsing page (AC: 1, 4)
+  - [x] 4.1 Update `templates/trees/browse.html` — add mood sets section above or below the filter bar, loaded via HTMX from parcel context
+  - [x] 4.2 Add parcel selector or auto-detect active parcel in browse view context
 
-- [ ] Task 5: Register URL patterns (AC: 3)
-  - [ ] 5.1 Add `parcels/<int:parcel_id>/mood-sets/` to `apps/trees/urls.py`
-  - [ ] 5.2 Add `parcels/<int:parcel_id>/mood-sets/<str:mood_key>/` to `apps/trees/urls.py`
+- [x] Task 5: Register URL patterns (AC: 3)
+  - [x] 5.1 Add `parcels/<int:parcel_id>/mood-sets/` to `apps/trees/urls.py`
+  - [x] 5.2 Add `parcels/<int:parcel_id>/mood-sets/<str:mood_key>/` to `apps/trees/urls.py`
 
-- [ ] Task 6: Write tests (AC: 1, 2, 3)
-  - [ ] 6.1 Test: `test_get_compatible_mood_sets_filters_by_climate` — parcel with `Cfb` climate returns mood sets with counts reflecting only Cfb-compatible species
-  - [ ] 6.2 Test: `test_mood_set_zero_compatible_trees` — parcel with rare climate zone returns mood set with count=0
-  - [ ] 6.3 Test: `test_mood_sets_for_parcel_view_returns_cards` — GET to mood sets endpoint returns 200 with mood card HTML
-  - [ ] 6.4 Test: `test_mood_set_trees_view_returns_filtered_list` — GET to mood set trees endpoint returns only compatible trees for that mood
+- [x] Task 6: Write tests (AC: 1, 2, 3)
+  - [x] 6.1 Test: `test_get_compatible_mood_sets_filters_by_climate` — parcel with `Cfb` climate returns mood sets with counts reflecting only Cfb-compatible species
+  - [x] 6.2 Test: `test_mood_set_zero_compatible_trees` — parcel with rare climate zone returns mood set with count=0
+  - [x] 6.3 Test: `test_mood_sets_for_parcel_view_returns_cards` — GET to mood sets endpoint returns 200 with mood card HTML
+  - [x] 6.4 Test: `test_mood_set_trees_view_returns_filtered_list` — GET to mood set trees endpoint returns only compatible trees for that mood
 
-- [ ] Task 7: Validation (all AC)
-  - [ ] 7.1 Run `uv run ruff check apps/trees/` — zero issues
-  - [ ] 7.2 Run `uv run mypy apps/ config/` — zero issues
-  - [ ] 7.3 Run `uv run python manage.py check` — zero issues
-  - [ ] 7.4 Run `uv run pytest apps/trees/ -v` — all tests pass, zero regressions
+- [x] Task 7: Validation (all AC)
+  - [x] 7.1 Run `uv run ruff check apps/trees/` — zero issues
+  - [x] 7.2 Run `uv run mypy apps/ config/` — zero issues
+  - [x] 7.3 Run `uv run python manage.py check` — zero issues
+  - [x] 7.4 Run `uv run pytest apps/trees/ -v` — all tests pass, zero regressions
 
 ## Dev Notes
 
@@ -228,10 +228,41 @@ The `mood_set_species` fixture in `apps/trees/tests/conftest.py` already creates
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6
 
 ### Debug Log References
 
+- mypy error on `request.user` type in `Parcel.objects.filter()` — resolved with `cast(CustomUser, request.user)` matching existing pattern in `apps/parcels/views.py`
+
 ### Completion Notes List
 
+- Created `apps/trees/services.py` with `get_compatible_mood_sets(parcel)` — filters TreeSpecies by climate zone + soil pH per mood set, returns `list[tuple[MoodSet, int]]`
+- Handles partial parcel profiles (soil_ph=None) by skipping soil pH filter
+- Added two views: `mood_sets_for_parcel` renders mood cards grid, `mood_set_trees` returns filtered tree list for a specific mood+parcel
+- Created mood card template with emoji (40px), title, description, count badge, amber accent — clickable via hx-get
+- Mood sets grid uses "Or explore by vibe:" heading, 2-col mobile / 3-col desktop layout
+- Browse page auto-detects most recent parcel with climate_zone and loads mood sets via HTMX on page load
+- `mood_key` passed in template context for Epic 4 integration point
+- All views protected with `@login_required` and user-scoped parcel access
+- 5 new tests (3 service + 2 view), 142 total tests passing, zero regressions
+- ruff: zero issues, mypy: zero issues, manage.py check: zero issues
+
+### Change Log
+
+- 2026-03-01: Implemented Story 3.4 — mood set display with parcel-based climate/soil filtering
+- 2026-03-01: Code review fixes — extracted `get_trees_for_mood_set()` service function (DRY), removed dead test fixture, added `id` to HTMX mood sets container, strengthened view test assertions
+- 2026-03-01: Code review #2 — fixed N+1 query in `get_compatible_mood_sets` (5 queries → 1), added Http404 for invalid mood_key, added 3 missing tests (get_trees_for_mood_set happy/invalid, view 404)
+
 ### File List
+
+**Created:**
+- `apps/trees/services.py`
+- `templates/trees/partials/mood_card.html`
+- `templates/trees/partials/mood_sets.html`
+- `apps/trees/tests/test_services.py`
+- `apps/trees/tests/test_views_mood.py`
+
+**Modified:**
+- `apps/trees/views.py`
+- `apps/trees/urls.py`
+- `templates/trees/browse.html`

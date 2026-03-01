@@ -1,0 +1,11 @@
+<div class="card bg-amber-50 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+     hx-get="{% url 'trees:mood_set_trees' parcel.pk mood.key %}"
+     hx-target="#trees-browse-result"
+     hx-swap="innerHTML">
+  <div class="card-body items-center text-center p-4">
+    <span class="text-[40px] leading-none">{{ mood.emoji }}</span>
+    <h4 class="card-title text-base mt-2">{{ mood.name }}</h4>
+    <p class="text-sm text-base-content/60 line-clamp-2">{{ mood.description }}</p>
+    <span class="badge badge-primary badge-sm mt-2">{{ count }} tree{{ count|pluralize }} match{{ count|pluralize:"es," }}</span>
+  </div>
+</div>
