@@ -100,20 +100,27 @@ def test_get_recommendation_raises_on_unexpected_format(mock_anthropic_cls):
 def test_recommendation_view_returns_error_partial_on_failure(user):
     from django.test import Client as DjangoClient
     from apps.parcels.models import Parcel
+    from apps.trees.models import TreeSpecies
 
+    TreeSpecies.objects.create(
+        scientific_name="Prunus avium", common_name="Wild Cherry",
+        koppen_zones=["Cfb"], soil_ph_min=5.0, soil_ph_max=8.0,
+        primary_use="fruit", max_height_m=15.0, maintenance_level="low",
+    )
     parcel = Parcel.objects.create(
         user=user, name="Garden", area_m2=100.0,
         latitude=48.85, longitude=2.35, climate_zone="Cfb - Oceanic",
+        soil_ph=6.5,
     )
     client = DjangoClient()
     client.force_login(user)
-    with patch("apps.recommendations.views.get_recommendation", side_effect=RecommendationError("API down")):
+    with patch("apps.recommendations.services.recommender.get_recommendation", side_effect=RecommendationError("API down")):
         response = client.post(f"/recommendations/{parcel.pk}/generate/")
     assert b"having trouble finding trees" in response.content
 
 
 @pytest.mark.django_db
-def test_recommendation_view_returns_escaped_result_on_success(user):
+def test_recommendation_view_returns_results_on_success(user):
     from django.test import Client as DjangoClient
     from apps.parcels.models import Parcel
 
@@ -123,6 +130,6 @@ def test_recommendation_view_returns_escaped_result_on_success(user):
     )
     client = DjangoClient()
     client.force_login(user)
-    with patch("apps.recommendations.views.get_recommendation", return_value='[{"scientific_name": "Prunus avium"}]'):
+    with patch("apps.recommendations.services.recommender.get_recommendation", return_value='[{"scientific_name": "Prunus avium", "rank": 1, "explanation": "Great tree"}]'):
         response = client.post(f"/recommendations/{parcel.pk}/generate/")
-    assert b"Prunus avium" in response.content
+    assert response.templates[0].name == "recommendations/partials/results.html"

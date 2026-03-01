@@ -7,5 +7,5 @@ from apps.recommendations import views
 app_name = "recommendations"
 
 urlpatterns: list[URLPattern] = [
-    path("<int:parcel_id>/generate/", views.generate_recommendations, name="generate"),
+    path("<int:parcel_id>/generate/", views.generate_recommendations_view, name="generate"),
 ]

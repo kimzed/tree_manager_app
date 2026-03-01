@@ -1,0 +1,22 @@
+<div id="recommendations-result">
+  <p class="text-sm text-base-content/60 mb-4">
+    {{ recommendations|length }} trees recommended for your garden
+  </p>
+  <div class="space-y-4">
+    {% for rec in recommendations %}
+      <div class="card bg-base-100 shadow-sm">
+        <div class="card-body p-4">
+          {% if rec.tree %}
+            <h4 class="card-title text-base">{{ rec.tree.common_name }}</h4>
+            <p class="text-sm italic text-base-content/60">{{ rec.scientific_name }}</p>
+          {% else %}
+            <h4 class="card-title text-base">{{ rec.scientific_name }}</h4>
+          {% endif %}
+          <div class="bg-primary/10 rounded-lg px-3 py-2 mt-2">
+            <p class="text-sm">{{ rec.explanation }}</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
