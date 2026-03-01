@@ -23,7 +23,7 @@ def parcel_cfb(user, mood_set_species):
     return Parcel.objects.create(
         user=user,
         name="Test parcel",
-        climate_zone="Cfb",
+        climate_zone="Cfb - Oceanic",
         soil_ph=6.5,
     )
 

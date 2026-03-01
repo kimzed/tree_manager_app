@@ -10,7 +10,8 @@ from apps.trees.models import TreeSpecies
 def _filter_species_for_parcel(
     queryset: QuerySet[TreeSpecies], parcel: Parcel,
 ) -> QuerySet[TreeSpecies]:
-    queryset = queryset.filter(koppen_zones__contains=parcel.climate_zone)
+    climate_code = parcel.climate_zone.split(" - ")[0] if parcel.climate_zone else ""
+    queryset = queryset.filter(koppen_zones__contains=climate_code)
     if parcel.soil_ph is not None:
         queryset = queryset.filter(
             soil_ph_min__lte=parcel.soil_ph,

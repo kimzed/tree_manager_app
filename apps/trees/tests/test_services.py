@@ -14,7 +14,7 @@ def cfb_parcel_with_user(db, mood_set_species, user_for_parcel):
     return Parcel.objects.create(
         user=user_for_parcel,
         name="Cfb parcel",
-        climate_zone="Cfb",
+        climate_zone="Cfb - Oceanic",
         soil_ph=6.5,
     )
 
@@ -24,7 +24,7 @@ def rare_climate_parcel(db, mood_set_species, user_for_parcel):
     return Parcel.objects.create(
         user=user_for_parcel,
         name="Rare parcel",
-        climate_zone="ET",
+        climate_zone="ET - Tundra",
         soil_ph=6.5,
     )
 
@@ -34,7 +34,7 @@ def partial_parcel(db, mood_set_species, user_for_parcel):
     return Parcel.objects.create(
         user=user_for_parcel,
         name="Partial parcel",
-        climate_zone="Cfb",
+        climate_zone="Cfb - Oceanic",
         soil_ph=None,
     )
 
