@@ -33,10 +33,19 @@
 
     {% if parcel.has_complete_profile %}
       <div class="divider my-1"></div>
-      <div class="bg-success/10 rounded-lg px-3 py-2 text-center">
-        <p class="font-semibold text-success text-sm">Profile complete</p>
-        <p class="text-xs text-base-content/60">Ready for recommendations</p>
+      <div class="text-center">
+        <button
+          class="btn btn-primary btn-sm"
+          hx-post="{% url 'recommendations:generate' parcel.pk %}"
+          hx-target="#recommendations-result"
+          hx-swap="innerHTML"
+          hx-indicator="#recommendations-loading"
+        >
+          Find My Trees
+        </button>
       </div>
+      {% include "recommendations/partials/loading.html" %}
+      <div id="recommendations-result"></div>
     {% endif %}
   </div>
 </div>

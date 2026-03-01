@@ -1,10 +1,16 @@
-<div id="recommendations-result">
-  <p class="text-sm text-base-content/60 mb-4">
-    {{ recommendations|length }} trees recommended for your garden
+{% if recommendations %}
+  <p class="text-lg font-semibold mb-4">
+    {{ recommendations|length }} trees for your garden
   </p>
-  <div class="space-y-4">
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     {% for rec in recommendations %}
       <div class="card bg-base-100 shadow-sm">
+        {% if rec.tree and rec.tree.image_url %}
+          <figure class="h-40 overflow-hidden">
+            <img src="{{ rec.tree.image_url }}" alt="{{ rec.tree.common_name }}" class="w-full h-full object-cover">
+          </figure>
+        {% endif %}
         <div class="card-body p-4">
           {% if rec.tree %}
             <h4 class="card-title text-base">{{ rec.tree.common_name }}</h4>
@@ -12,11 +18,42 @@
           {% else %}
             <h4 class="card-title text-base">{{ rec.scientific_name }}</h4>
           {% endif %}
+
           <div class="bg-primary/10 rounded-lg px-3 py-2 mt-2">
             <p class="text-sm">{{ rec.explanation }}</p>
           </div>
+
+          {% if rec.tree and rec.tree.attributes %}
+            <div class="flex flex-wrap gap-1 mt-2">
+              {% for attr in rec.tree.attributes %}
+                <span class="badge badge-outline badge-sm">{{ attr }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
       </div>
     {% endfor %}
   </div>
-</div>
+{% else %}
+  <p class="text-base text-base-content/60 text-center py-8">
+    No matching trees found for your garden's conditions. Try adjusting your profile or preferences.
+  </p>
+{% endif %}
+
+{% if mood_sets %}
+  <div class="divider mt-8 mb-4"></div>
+  <p class="text-base font-semibold mb-3">Or explore by vibe:</p>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    {% for mood in mood_sets %}
+      <div class="card bg-base-200 shadow-sm">
+        <div class="card-body p-4">
+          <h5 class="card-title text-sm">
+            <span>{{ mood.emoji }}</span> {{ mood.name }}
+          </h5>
+          <p class="text-xs text-base-content/60">{{ mood.description }}</p>
+          <p class="text-xs font-semibold text-primary">{{ mood.compatible_count }} matching trees</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

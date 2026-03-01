@@ -76,9 +76,12 @@ def parse_recommendations(
 
 
 def generate_recommendations(
-    parcel: Parcel, user: CustomUser
+    parcel: Parcel,
+    user: CustomUser,
+    *,
+    compatible_trees: QuerySet[TreeSpecies] | None = None,
 ) -> list[TreeRecommendation]:
-    compatible = get_compatible_trees(parcel)
+    compatible = compatible_trees if compatible_trees is not None else get_compatible_trees(parcel)
     if not compatible.exists():
         return []
     tree_list_str = format_tree_list(compatible)
