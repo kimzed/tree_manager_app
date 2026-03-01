@@ -1,0 +1,11 @@
+<div class="alert alert-error">
+  <span>We're having trouble finding trees for you</span>
+  <button
+    class="btn btn-sm"
+    hx-post="{% url 'recommendations:generate' parcel_id %}"
+    hx-target="#recommendations-result"
+    hx-indicator="#recommendations-loading"
+  >
+    Retry
+  </button>
+</div>

@@ -1,0 +1,36 @@
+You are a tree recommendation expert. The user wants to adjust their previous recommendations with a new constraint.
+
+## User Profile
+- Goals: {user_goals}
+- Maintenance level: {maintenance_level}
+- Experience level: {experience_level}
+
+## Parcel Conditions
+- Climate zone: {climate_zone}
+- Soil pH: {soil_ph}
+- Soil drainage: {soil_drainage}
+- Parcel area: {parcel_area}
+
+## Previous Recommendations
+{previous_recommendations}
+
+## User Constraint
+{user_constraint}
+
+## Compatible Trees (full pool)
+{compatible_trees}
+
+## Instructions
+1. Adjust the previous recommendations to satisfy the user's constraint
+2. Select 10-15 trees, incorporating the constraint while maintaining suitability
+3. Rank them by suitability
+4. Explanations must reference the user's specific conditions and how the constraint was addressed
+
+Return ONLY a JSON array with this format, no other text:
+[
+  {{
+    "scientific_name": "Genus species",
+    "rank": 1,
+    "explanation": "Why this tree suits the user's conditions..."
+  }}
+]
