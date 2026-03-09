@@ -787,6 +787,30 @@ So that I have a delightful experience discovering my perfect trees.
 
 ---
 
+#### Story 4.3b: Core Flow UX Polish — Redirect, Drawing Guidance, and Recommendation Layout
+
+As a user completing the core flow for the first time,
+I want to be guided seamlessly from profile setup through parcel drawing to recommendations,
+So that the experience feels intuitive and the results are easy to read.
+
+**Acceptance Criteria:**
+
+**Given** I am a new user who just completed profile setup
+**When** my profile is saved
+**Then** I am redirected to the parcel creation page, not the landing page
+
+**Given** I am on the parcel creation page
+**When** the map loads and I haven't drawn anything yet
+**Then** I see an instruction banner and a styled "Draw Parcel" button that activates the polygon drawing tool
+
+**Given** I am on the parcel detail page and click "Find My Trees"
+**When** recommendations are displayed
+**Then** tree cards appear below the map in a full-width section, not inside the narrow profile sidebar
+
+**Technical scope:** `apps/users/views.py` (redirect fix), `templates/parcels/create.html` (drawing guidance), `templates/parcels/detail.html` + `templates/parcels/partials/profile.html` (recommendation layout restructure), possibly `static/js/map.js` (custom draw button trigger).
+
+---
+
 #### Story 4.4: Mood Set Triggered Recommendations
 
 As a user,

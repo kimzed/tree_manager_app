@@ -41,9 +41,9 @@ def test_profile_setup_redirects_anonymous_user():
 
 
 @pytest.mark.django_db
-def test_valid_profile_submission_redirects_to_landing(authenticated_client):
+def test_valid_profile_submission_redirects_to_parcel_create(authenticated_client):
     response = authenticated_client.post("/users/profile/", VALID_PROFILE_DATA)
-    assert response.url == "/"
+    assert response.url == "/parcels/create/"
 
 
 @pytest.mark.django_db

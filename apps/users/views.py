@@ -65,7 +65,7 @@ def profile_setup(request: HttpRequest) -> HttpResponse:
             user.experience_level = form.cleaned_data["experience_level"]
             user.profile_completed = True
             user.save()
-            return redirect("landing")
+            return redirect("parcels:create")
         return render(request, "users/profile_setup.html", {"form": form, "enriched_goals": enriched_goals})
     form = ProfileSetupForm(
         initial={

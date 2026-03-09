@@ -242,7 +242,7 @@ def parcel_full_analyze(request: HttpRequest, pk: int) -> HttpResponse:
             pass
 
     parcel.save()
-    return render(request, "parcels/partials/profile.html", {"parcel": parcel})
+    return render(request, "parcels/partials/profile_with_recommendations.html", {"parcel": parcel})
 
 
 @require_POST

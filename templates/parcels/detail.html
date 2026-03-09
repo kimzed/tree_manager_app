@@ -43,6 +43,12 @@
       </div>
     </div>
   </div>
+
+  <div id="parcels-recommendations-section">
+    {% if parcel.has_complete_profile %}
+      {% include "parcels/partials/recommendations_trigger.html" with parcel=parcel %}
+    {% endif %}
+  </div>
 </div>
 
 <script src="{% static 'js/map.js' %}"></script>

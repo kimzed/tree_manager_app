@@ -32,6 +32,22 @@ def test_parcel_create_returns_200_for_authenticated_user(user):
 
 
 @pytest.mark.django_db
+def test_parcel_create_shows_drawing_instruction_banner(user):
+    client = Client()
+    client.force_login(user)
+    response = client.get("/parcels/create/")
+    assert b"Search for your address, then draw your garden boundary on the map" in response.content
+
+
+@pytest.mark.django_db
+def test_parcel_create_shows_draw_parcel_button(user):
+    client = Client()
+    client.force_login(user)
+    response = client.get("/parcels/create/")
+    assert b"Draw Parcel" in response.content
+
+
+@pytest.mark.django_db
 def test_geocode_view_valid_address_returns_result_partial(user):
     client = Client()
     client.force_login(user)
@@ -209,6 +225,37 @@ def test_parcel_detail_returns_correct_parcel_for_owner(user):
     response = client.get(f"/parcels/{parcel.pk}/")
     assert response.status_code == 200
     assert b"Garden" in response.content
+
+
+def _create_parcel_with_complete_profile(user):
+    user.profile_completed = True
+    user.goals = ["fruit"]
+    user.maintenance_level = "low"
+    user.experience_level = "beginner"
+    user.save()
+    return Parcel.objects.create(
+        user=user, name="Garden", polygon=SAMPLE_POLYGON, area_m2=300.0,
+        latitude=48.85, longitude=2.35, climate_zone="Cfb", soil_ph=6.5,
+        soil_drainage="Well-drained",
+    )
+
+
+@pytest.mark.django_db
+def test_parcel_detail_shows_find_my_trees_when_profile_complete(user):
+    parcel = _create_parcel_with_complete_profile(user)
+    client = Client()
+    client.force_login(user)
+    response = client.get(f"/parcels/{parcel.pk}/")
+    assert b"Find My Trees" in response.content
+
+
+@pytest.mark.django_db
+def test_parcel_detail_shows_recommendations_container_when_profile_complete(user):
+    parcel = _create_parcel_with_complete_profile(user)
+    client = Client()
+    client.force_login(user)
+    response = client.get(f"/parcels/{parcel.pk}/")
+    assert b"recommendations-result" in response.content
 
 
 @pytest.mark.django_db

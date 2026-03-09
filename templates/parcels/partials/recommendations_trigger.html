@@ -1,0 +1,15 @@
+<div class="mt-8">
+  <div class="text-center mb-4">
+    <button
+      class="btn btn-primary"
+      hx-post="{% url 'recommendations:generate' parcel.pk %}"
+      hx-target="#recommendations-result"
+      hx-swap="innerHTML"
+      hx-indicator="#recommendations-loading"
+    >
+      Find My Trees
+    </button>
+  </div>
+  {% include "recommendations/partials/loading.html" %}
+  <div id="recommendations-result"></div>
+</div>

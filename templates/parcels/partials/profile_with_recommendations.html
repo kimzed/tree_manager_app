@@ -1,0 +1,7 @@
+{% include "parcels/partials/profile.html" with parcel=parcel %}
+
+{% if parcel.has_complete_profile %}
+  <div id="parcels-recommendations-section" hx-swap-oob="innerHTML">
+    {% include "parcels/partials/recommendations_trigger.html" with parcel=parcel %}
+  </div>
+{% endif %}

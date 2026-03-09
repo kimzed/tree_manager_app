@@ -68,6 +68,7 @@ development_status:
   4-1-llm-service-integration: done
   4-2-recommendation-generation-with-explanations: done
   4-3-recommendation-reveal-ui-and-loading-states: done
+  4-3b-core-flow-ux-polish: done
   4-4-mood-set-triggered-recommendations: backlog
   4-5-natural-language-renegotiation: backlog
   epic-4-retrospective: optional

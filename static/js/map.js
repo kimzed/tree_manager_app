@@ -54,20 +54,30 @@
 
   function createDrawControl() {
     return new L.Control.Draw({
-      draw: {
-        polygon: true,
-        polyline: false,
-        rectangle: false,
-        circle: false,
-        marker: false,
-        circlemarker: false,
-      },
+      draw: false,
       edit: { featureGroup: drawnItems },
     });
   }
 
   var drawControl = createDrawControl();
   map.addControl(drawControl);
+
+  // Custom "Draw Parcel" button activates polygon draw mode
+  var drawBtn = document.getElementById("parcels-draw-btn");
+  if (drawBtn) {
+    drawBtn.addEventListener("click", function () {
+      new L.Draw.Polygon(map).enable();
+    });
+  }
+
+  function hideDrawingGuidance() {
+    var guidance = document.getElementById("parcels-drawing-guidance");
+    if (guidance) guidance.classList.add("hidden");
+  }
+
+  map.on("draw:drawstart", function () {
+    hideDrawingGuidance();
+  });
 
   function updatePolygonUI(layer) {
     var latlngs = layer.getLatLngs()[0];
@@ -93,6 +103,7 @@
     drawnItems.addLayer(event.layer);
     var resultEl = document.getElementById("parcels-save-result") || document.getElementById("parcels-update-result");
     if (resultEl) resultEl.innerHTML = "";
+    hideDrawingGuidance();
     updatePolygonUI(event.layer);
   });
 
